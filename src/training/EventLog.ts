@@ -1,4 +1,5 @@
-export type TrainingEvent = { id: string; type: string; timestamp: number; mission: 1 | 2 | 3 | 4 | 5; outcome: 'correct' | 'incorrect' | 'neutral'; critical: boolean; description: string };
+export type CriticalErrorCode = 'sample_mismatch_accepted' | 'invalid_result_treated_as_negative' | 'incident_ignored';
+export type TrainingEvent = { id: string; type: string; timestamp: number; mission: 1 | 2 | 3 | 4 | 5; outcome: 'correct' | 'incorrect' | 'neutral'; critical: boolean; description: string; criticalCode?: CriticalErrorCode };
 
 export class EventLog {
   private startedAt = performance.now();
