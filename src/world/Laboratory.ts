@@ -52,19 +52,10 @@ export class Laboratory {
 
   openDoor(): void { this.doorOpen = true; }
 
-  showContamination(): void { this.sharedSurfaceRoot.traverse((child) => { if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) child.material.color.set(0xf09b62); }); }
+  showContamination(): void { this.sharedSurfaceRoot.traverse((child) => { if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshBasicMaterial) child.material.color.set(0xf09b62); }); }
 
   private build(): void {
-    const mat = (color: number, roughness = 0.75) => {
-      const baseColor = new THREE.Color(color);
-      return new THREE.MeshStandardMaterial({
-        color: baseColor,
-        roughness,
-        metalness: 0,
-        emissive: baseColor.clone(),
-        emissiveIntensity: 0.22,
-      });
-    };
+    const mat = (color: number) => new THREE.MeshBasicMaterial({ color, toneMapped: false });
     const floor = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH, 0.2, FLOOR_MAX_Z - FLOOR_MIN_Z + 1), mat(0x263b40));
     floor.position.set(0, -0.1, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(floor);
     const addBox = (size: THREE.Vector3, position: THREE.Vector3, color: number, collision = true): THREE.Mesh => {
@@ -104,7 +95,7 @@ export class Laboratory {
     const keyboard = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.08, 0.45), mat(0xa6bdbc)); keyboard.position.set(3.8, 1.34, 18.25); this.computerRoot.add(keyboard);
     this.scene.add(this.computerRoot);
     this.sampleRoot.position.set(1.8, 1.55, 18); this.scene.add(this.sampleRoot);
-    const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.15, 16), mat(0x70c5bd, 0.35)); tube.rotation.z = Math.PI / 2; this.sampleRoot.add(tube);
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.15, 16), mat(0x70c5bd)); tube.rotation.z = Math.PI / 2; this.sampleRoot.add(tube);
     const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.25, 16), mat(0xe1b678)); cap.rotation.z = Math.PI / 2; cap.position.x = 0.68; this.sampleRoot.add(cap);
     const labelCanvas = document.createElement('canvas'); labelCanvas.width = 256; labelCanvas.height = 64;
     const context = labelCanvas.getContext('2d'); if (context) { context.fillStyle = '#f2f7f4'; context.fillRect(0, 0, 256, 64); context.fillStyle = '#12343a'; context.font = 'bold 30px sans-serif'; context.fillText('SIM-001', 58, 40); }
@@ -122,7 +113,7 @@ export class Laboratory {
     const pipetteBody = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.5, 0.35), mat(0xd4e5df)); pipetteBody.rotation.z = -0.2; this.pipetteRoot.add(pipetteBody);
     const pipetteTip = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.65, 12), mat(0x65c9b8)); pipetteTip.position.y = -0.95; this.pipetteRoot.add(pipetteTip);
     this.workSampleRoot.position.set(0.6, 2.25, 18.8); this.scene.add(this.workSampleRoot);
-    const workTube = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.1, 16), mat(0x67c7bd, 0.35)); workTube.rotation.z = Math.PI / 2; this.workSampleRoot.add(workTube);
+    const workTube = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.1, 16), mat(0x67c7bd)); workTube.rotation.z = Math.PI / 2; this.workSampleRoot.add(workTube);
     this.sharedSurfaceRoot.position.set(1.35, 2.05, 18.75); this.scene.add(this.sharedSurfaceRoot);
     this.sharedSurfaceRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.12, 0.55), mat(0x253d43)));
     this.virtualHandRoot.position.set(0.1, 2.15, 19.15); this.scene.add(this.virtualHandRoot);
@@ -131,7 +122,7 @@ export class Laboratory {
     this.walls.push(new THREE.Box3(new THREE.Vector3(5, 0, 18.25), new THREE.Vector3(8.4, 1.325, 20.35)));
     this.molecularEquipmentRoot.position.set(6.1, 1.45, 18.85); this.scene.add(this.molecularEquipmentRoot);
     this.molecularEquipmentRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.7, 2.1, 1.1), mat(0x4f8582)));
-    const equipmentLight = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.28, 0.08), mat(0x65c9b8, 0.35)); equipmentLight.position.set(0, 0.65, -0.58); this.molecularEquipmentRoot.add(equipmentLight);
+    const equipmentLight = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.28, 0.08), mat(0x65c9b8)); equipmentLight.position.set(0, 0.65, -0.58); this.molecularEquipmentRoot.add(equipmentLight);
     this.molecularTerminalRoot.position.set(7.35, 2.15, 18.75); this.scene.add(this.molecularTerminalRoot);
     this.molecularTerminalRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.9, 0.12), mat(0x1c343a)));
     this.molecularResultRoot.position.set(4.8, 1.9, 19.75); this.scene.add(this.molecularResultRoot);
