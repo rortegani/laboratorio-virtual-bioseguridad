@@ -17,6 +17,10 @@ export type TrainingSnapshot = {
   crossContaminationDetected: boolean;
   crossContaminationAcknowledged: boolean;
   mission3Completed: boolean;
+  workSampleContacted: boolean;
+  safeMeasureApplied: boolean;
+  sharedSurfaceContacted: boolean;
+  safeFlowCompleted: boolean;
 };
 
 export class TrainingState {
@@ -39,6 +43,10 @@ export class TrainingState {
     crossContaminationDetected: false,
     crossContaminationAcknowledged: false,
     mission3Completed: false,
+    workSampleContacted: false,
+    safeMeasureApplied: false,
+    sharedSurfaceContacted: false,
+    safeFlowCompleted: false,
   };
 
   private listeners = new Set<(state: TrainingSnapshot) => void>();
