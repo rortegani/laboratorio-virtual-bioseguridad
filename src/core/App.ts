@@ -4,6 +4,8 @@ import { InteractiveObject } from '../interaction/InteractiveObject';
 import { InteractionManager } from '../interaction/InteractionManager';
 import { TrainingState } from '../training/TrainingState';
 import { MissionManager } from '../training/MissionManager';
+import { Mission2Manager } from '../training/Mission2Manager';
+import { scenario } from '../data/scenario';
 import { Laboratory } from '../world/Laboratory';
 import { World } from '../world/World';
 import { UIManager } from '../ui/UIManager';
@@ -16,6 +18,7 @@ export class App {
   private interaction!: InteractionManager;
   private readonly state = new TrainingState();
   private readonly mission = new MissionManager(this.state);
+  private readonly mission2 = new Mission2Manager(this.state, scenario.sampleScenario);
   private previousTime = 0;
 
   constructor(private readonly container: HTMLElement | null) { if (!container) throw new Error('App container not found'); this.ui = new UIManager(container); }
@@ -29,6 +32,7 @@ export class App {
     this.player = new PlayerController(this.canvas, collisionSystem);
     this.interaction = new InteractionManager(this.player.camera, (target) => this.ui.setTarget(target));
     this.registerInteractions(laboratory, collisionSystem);
+    this.state.subscribe((snapshot) => this.ui.setMission(snapshot));
     window.addEventListener('resize', () => this.world.resize(this.player.camera));
     this.canvas.addEventListener('click', () => { this.ui.setPointerHint(false); this.player.focus(); });
     document.addEventListener('pointerlockchange', () => this.ui.setPointerHint(document.pointerLockElement !== this.canvas));
@@ -42,6 +46,8 @@ export class App {
     this.interaction.register(prep.root, new InteractiveObject('preparation-station', 'Estación de preparación', 'preparation', 4, () => { this.openModal(); this.ui.showPreparation(() => this.state.update({ preparationCompleted: true })); }));
     this.interaction.register(sink.root, new InteractiveObject('hand-washing', 'Estación de higiene de manos', 'hygiene', 4, () => { this.openModal(); this.ui.showHandHygiene(() => this.state.update({ handHygieneCompleted: true })); }));
     this.interaction.register(laboratory.doorRoot, new InteractiveObject('door', 'Puerta de ingreso', 'door', 4, () => { this.openModal(); this.ui.showDoor(this.state.snapshot, () => { if (this.mission.unlockDoor()) { collisionSystem.removeObstacle(laboratory.doorCollision); laboratory.openDoor(); } }); }));
+    this.interaction.register(laboratory.sampleRoot, new InteractiveObject('sample-sim-001', 'Muestra SIM-001', 'sample', 4, () => { this.openModal(); this.ui.showSample(() => this.state.update({ sampleLocated: true, sampleInspected: true })); }));
+    this.interaction.register(laboratory.computerRoot, new InteractiveObject('reception-computer', 'Sistema de información del laboratorio', 'computer', 4, () => { this.openModal(); this.ui.showComputer(scenario.sampleScenario, (decision) => this.ui.showVerificationResult(this.mission2.verifySampleDecision(decision))); }));
   }
 
   private openModal(): void { this.player.release(); this.ui.setPointerHint(true); }

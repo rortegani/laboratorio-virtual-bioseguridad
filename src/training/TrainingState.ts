@@ -4,6 +4,11 @@ export type TrainingSnapshot = {
   handHygieneCompleted: boolean;
   doorUnlocked: boolean;
   mission1Completed: boolean;
+  sampleLocated: boolean;
+  sampleInspected: boolean;
+  sampleVerified: boolean;
+  sampleDiscrepancyReported: boolean;
+  mission2Completed: boolean;
 };
 
 export class TrainingState {
@@ -13,6 +18,11 @@ export class TrainingState {
     handHygieneCompleted: false,
     doorUnlocked: false,
     mission1Completed: false,
+    sampleLocated: false,
+    sampleInspected: false,
+    sampleVerified: false,
+    sampleDiscrepancyReported: false,
+    mission2Completed: false,
   };
 
   private listeners = new Set<(state: TrainingSnapshot) => void>();

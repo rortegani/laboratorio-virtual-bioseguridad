@@ -14,6 +14,8 @@ export class Laboratory {
   readonly interactive: BuiltObject[] = [];
   private readonly walls: THREE.Box3[] = [];
   readonly doorRoot = new THREE.Group();
+  readonly sampleRoot = new THREE.Group();
+  readonly computerRoot = new THREE.Group();
   private doorOpen = false;
   private doorProgress = 0;
 
@@ -67,6 +69,18 @@ export class Laboratory {
     sink.add(new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.5, 0.8), mat(0x80999a)));
     const basin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.15, 0.55), mat(0xd6e5e1)); basin.position.set(0, 0.8, -0.2); sink.add(basin);
     const tap = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.65, 12), mat(0xd6e5e1)); tap.position.set(0, 1.25, -0.3); sink.add(tap);
-    this.interactive.push({ root: sign }, { root: prep }, { root: sink });
+    const receptionTable = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.25, 2.3), mat(0x5c7778)); receptionTable.position.set(3, 1.2, 18); this.scene.add(receptionTable);
+    const tableLeg = new THREE.Mesh(new THREE.BoxGeometry(0.25, 2.4, 0.25), mat(0x425e61)); tableLeg.position.set(1.2, 0.1, 17.2); this.scene.add(tableLeg);
+    const monitor = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.1, 0.18), mat(0x1c343a)); monitor.position.set(3.8, 2.1, 17.7); this.computerRoot.add(monitor);
+    const monitorStand = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.7, 0.18), mat(0x899e9d)); monitorStand.position.set(3.8, 1.4, 17.7); this.computerRoot.add(monitorStand);
+    const keyboard = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.08, 0.45), mat(0xa6bdbc)); keyboard.position.set(3.8, 1.34, 18.25); this.computerRoot.add(keyboard);
+    this.scene.add(this.computerRoot);
+    this.sampleRoot.position.set(1.8, 1.55, 18); this.scene.add(this.sampleRoot);
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.15, 16), mat(0x70c5bd, 0.35)); tube.rotation.z = Math.PI / 2; this.sampleRoot.add(tube);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.25, 16), mat(0xe1b678)); cap.rotation.z = Math.PI / 2; cap.position.x = 0.68; this.sampleRoot.add(cap);
+    const labelCanvas = document.createElement('canvas'); labelCanvas.width = 256; labelCanvas.height = 64;
+    const context = labelCanvas.getContext('2d'); if (context) { context.fillStyle = '#f2f7f4'; context.fillRect(0, 0, 256, 64); context.fillStyle = '#12343a'; context.font = 'bold 30px sans-serif'; context.fillText('SIM-001', 58, 40); }
+    const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(labelCanvas) })); label.scale.set(1.4, 0.35, 1); label.position.set(0, 0.35, 0); this.sampleRoot.add(label);
+    this.interactive.push({ root: sign }, { root: prep }, { root: sink }, { root: this.sampleRoot }, { root: this.computerRoot });
   }
 }

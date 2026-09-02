@@ -35,4 +35,12 @@ Incluye pantalla inicial, movimiento con delta time, mirada con Pointer Lock, co
 
 ## Pendiente
 
-Modelos 3D de producción, equipos internos, accesibilidad avanzada, experiencia móvil, persistencia, usuarios, backend y las misiones 2 a 5 quedan fuera de este sprint.
+Modelos 3D de producción, equipos internos, accesibilidad avanzada, experiencia móvil, persistencia, usuarios, backend y las misiones 3 a 5 quedan fuera de este sprint.
+
+## Sprint 2 — Recepción y verificación
+
+La segunda misión se activa al completar el ingreso seguro. El estudiante examina la muestra respiratoria simulada `SIM-001` y utiliza el computador de recepción para comparar la identificación física con el registro digital.
+
+La configuración `sampleScenario` en `src/data/scenario.ts` permite probar dos variantes sin aleatoriedad: `match` muestra `SIM-001` en el sistema y requiere aceptar la muestra; `mismatch` muestra `SIM-017` y requiere reportar la discrepancia. La misión no se completa sin examinar primero la muestra ni con una decisión incorrecta.
+
+Este sprint no incluye procesamiento molecular, RT-qPCR, pipeteo, contaminación, residuos, incidentes, backend, usuarios, VR, WebXR ni Sprint 3.

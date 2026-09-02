@@ -1,6 +1,8 @@
 import { scenario } from '../data/scenario';
 import { InteractiveObject } from '../interaction/InteractiveObject';
 import type { TrainingSnapshot } from '../training/TrainingState';
+import type { VerificationResult } from '../training/Mission2Manager';
+import { digitalCodeFor, sample } from '../data/sample';
 
 export class UIManager {
   readonly root: HTMLElement;
@@ -19,8 +21,18 @@ export class UIManager {
   }
   onStart(callback: () => void): void { this.root.querySelector('.start')?.addEventListener('click', callback); }
   showGame(): void { this.root.querySelector('.start-screen')?.classList.add('hidden'); this.root.querySelector('.game-ui')?.classList.remove('hidden'); }
+  setMission(snapshot: TrainingSnapshot): void {
+    const eyebrow = this.root.querySelector('.hud .eyebrow'); const title = this.root.querySelector('.hud strong'); const objective = this.root.querySelector('.objective');
+    if (!snapshot.mission1Completed) return;
+    if (eyebrow) eyebrow.textContent = 'MISIÓN 2/5';
+    if (title) title.textContent = snapshot.mission2Completed ? 'Completada' : 'Recepción y verificación';
+    if (objective) objective.textContent = snapshot.mission2Completed ? 'Misión 2 completada.' : 'Localice SIM-001 y verifique su información.';
+  }
   setTarget(target: InteractiveObject | null): void { this.prompt.classList.toggle('visible', Boolean(target)); this.targetLabel.textContent = target ? `${target.name} · ` : ''; }
   setPointerHint(visible: boolean): void { this.pointerHint.classList.toggle('visible', visible); }
+  showSample(done: () => void): void { this.showModal(`<div class="eyebrow">MUESTRA DE ENTRENAMIENTO</div><h2>Identificación de SIM-001</h2><dl><dt>Código</dt><dd>${sample.physicalCode}</dd><dt>Tipo</dt><dd>${sample.type}</dd><dt>Solicitud</dt><dd>${sample.request}</dd><dt>Estado</dt><dd>Pendiente de verificación</dd></dl><button class="primary modal-action">REGISTRAR INFORMACIÓN REVISADA</button>`, done); }
+  showComputer(scenario: 'match' | 'mismatch', onDecision: (decision: 'accept' | 'report_discrepancy') => void): void { const code = digitalCodeFor(scenario); this.showModal(`<div class="eyebrow">SISTEMA DE LABORATORIO</div><h2>Registro de recepción</h2><dl><dt>Paciente</dt><dd>${sample.patient}</dd><dt>Código de muestra</dt><dd>${code}</dd><dt>Tipo</dt><dd>${sample.type}</dd><dt>Solicitud</dt><dd>${sample.request}</dd><dt>Estado</dt><dd>Pendiente de recepción</dd></dl><div class="decision-buttons"><button class="primary accept">ACEPTAR MUESTRA</button><button class="secondary report">REPORTAR DISCREPANCIA</button></div>`, undefined); this.modal.querySelector('.accept')?.addEventListener('click', () => { this.closeModal(); onDecision('accept'); }); this.modal.querySelector('.report')?.addEventListener('click', () => { this.closeModal(); onDecision('report_discrepancy'); }); }
+  showVerificationResult(result: VerificationResult): void { const content = result.correct ? (result.reason === 'sample_match' ? '<h2>MISIÓN 2 COMPLETADA</h2><p>Recepción y verificación correcta de SIM-001.</p>' : '<h2>MISIÓN 2 COMPLETADA</h2><p>Discrepancia de identificación reconocida correctamente.</p>') : (result.reason === 'sample_not_inspected' ? '<h2>VERIFICACIÓN INCOMPLETA</h2><p>Revise la identificación de la muestra antes de continuar.</p>' : result.reason === 'wrong_decision' ? (result.scenario === 'match' ? '<h2>DECISIÓN INCORRECTA</h2><p>Los datos presentados coinciden. Revise nuevamente la muestra y el registro.</p>' : '<h2>DECISIÓN INCORRECTA</h2><p>Existe una discrepancia entre la identificación física y el registro digital. Revise ambos datos antes de continuar.</p>') : '<h2>ACCESO NO DISPONIBLE</h2><p>Complete la Misión 1 antes de continuar.</p>'); this.showModal(content); }
   showSafety(done: () => void): void { this.showModal(`<div class="eyebrow">INFORMACIÓN DE SEGURIDAD</div><h2>Área de ingreso</h2><p>Escenario educativo de laboratorio clínico.</p><p>Antes de ingresar deben revisarse los riesgos y las medidas de seguridad establecidas para la actividad.</p><ul>${scenario.safetyRisks.map((risk) => `<li>${risk}</li>`).join('')}</ul><button class="primary modal-action">ENTENDIDO</button>`, done); }
   showPreparation(done: () => void): void { this.showModal(`<div class="eyebrow">PREPARACIÓN PERSONAL</div><h2>Condiciones de preparación</h2><p>Este escenario requiere completar las condiciones de preparación definidas antes del ingreso.</p><div class="prep-items"><span>Protección visual</span><span>Bata de laboratorio</span><span>Guantes simulados</span></div><button class="primary modal-action">COMPLETAR PREPARACIÓN</button>`, done); }
   showHandHygiene(done: () => void): void { this.showModal(`<div class="eyebrow">HIGIENE DE MANOS</div><h2>Estación de higiene de manos</h2><p>Acción de entrenamiento registrada.</p><div class="loader"></div><p class="muted">Procesando registro…</p>`, undefined); window.setTimeout(() => { this.closeModal(); done(); }, 2000); }
