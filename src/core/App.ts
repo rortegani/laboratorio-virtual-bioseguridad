@@ -31,8 +31,12 @@ export class App {
     const collisionSystem = new CollisionSystem(laboratory.collisions);
     this.player = new PlayerController(this.canvas, collisionSystem);
     this.interaction = new InteractionManager(this.player.camera, (target) => this.ui.setTarget(target));
-    this.registerInteractions(laboratory, collisionSystem);
+    this.registerMission1Interactions(laboratory, collisionSystem);
     this.state.subscribe((snapshot) => this.ui.setMission(snapshot));
+    let mission2Registered = false;
+    this.state.subscribe((snapshot) => {
+      if (snapshot.mission1Completed && !mission2Registered) { mission2Registered = true; this.registerMission2Interactions(laboratory); }
+    });
     window.addEventListener('resize', () => this.world.resize(this.player.camera));
     this.canvas.addEventListener('click', () => { this.ui.setPointerHint(false); this.player.focus(); });
     document.addEventListener('pointerlockchange', () => this.ui.setPointerHint(document.pointerLockElement !== this.canvas));
@@ -40,13 +44,16 @@ export class App {
     this.ui.setPointerHint(true); this.world.resize(this.player.camera); requestAnimationFrame((time) => this.loop(time, laboratory));
   }
 
-  private registerInteractions(laboratory: Laboratory, collisionSystem: CollisionSystem): void {
+  private registerMission1Interactions(laboratory: Laboratory, collisionSystem: CollisionSystem): void {
     const [sign, prep, sink] = laboratory.interactive;
     this.interaction.register(sign.root, new InteractiveObject('safety-sign', 'Información del área', 'safety', 5, () => { this.openModal(); this.ui.showSafety(() => this.state.update({ riskInfoReviewed: true })); }));
     this.interaction.register(prep.root, new InteractiveObject('preparation-station', 'Estación de preparación', 'preparation', 4, () => { this.openModal(); this.ui.showPreparation(() => this.state.update({ preparationCompleted: true })); }));
     this.interaction.register(sink.root, new InteractiveObject('hand-washing', 'Estación de higiene de manos', 'hygiene', 4, () => { this.openModal(); this.ui.showHandHygiene(() => this.state.update({ handHygieneCompleted: true })); }));
     this.interaction.register(laboratory.doorRoot, new InteractiveObject('door', 'Puerta de ingreso', 'door', 4, () => { this.openModal(); this.ui.showDoor(this.state.snapshot, () => { if (this.mission.unlockDoor()) { collisionSystem.removeObstacle(laboratory.doorCollision); laboratory.openDoor(); } }); }));
-    this.interaction.register(laboratory.sampleRoot, new InteractiveObject('sample-sim-001', 'Muestra SIM-001', 'sample', 4, () => { this.openModal(); this.ui.showSample(() => this.state.update({ sampleLocated: true, sampleInspected: true })); }));
+  }
+
+  private registerMission2Interactions(laboratory: Laboratory): void {
+    this.interaction.register(laboratory.sampleRoot, new InteractiveObject('sample-sim-001', 'Muestra SIM-001', 'sample', 4, () => { this.openModal(); const result = this.mission2.inspectSample(); if (result.success) this.ui.showSample(() => undefined); else this.ui.showInspectionBlocked(); }));
     this.interaction.register(laboratory.computerRoot, new InteractiveObject('reception-computer', 'Sistema de información del laboratorio', 'computer', 4, () => { this.openModal(); this.ui.showComputer(scenario.sampleScenario, (decision) => this.ui.showVerificationResult(this.mission2.verifySampleDecision(decision))); }));
   }
 

@@ -70,6 +70,7 @@ export class Laboratory {
     const basin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.15, 0.55), mat(0xd6e5e1)); basin.position.set(0, 0.8, -0.2); sink.add(basin);
     const tap = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.65, 12), mat(0xd6e5e1)); tap.position.set(0, 1.25, -0.3); sink.add(tap);
     const receptionTable = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.25, 2.3), mat(0x5c7778)); receptionTable.position.set(3, 1.2, 18); this.scene.add(receptionTable);
+    this.walls.push(new THREE.Box3(new THREE.Vector3(0.75, 0, 16.85), new THREE.Vector3(5.25, 1.325, 19.15)));
     const tableLeg = new THREE.Mesh(new THREE.BoxGeometry(0.25, 2.4, 0.25), mat(0x425e61)); tableLeg.position.set(1.2, 0.1, 17.2); this.scene.add(tableLeg);
     const monitor = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.1, 0.18), mat(0x1c343a)); monitor.position.set(3.8, 2.1, 17.7); this.computerRoot.add(monitor);
     const monitorStand = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.7, 0.18), mat(0x899e9d)); monitorStand.position.set(3.8, 1.4, 17.7); this.computerRoot.add(monitorStand);
