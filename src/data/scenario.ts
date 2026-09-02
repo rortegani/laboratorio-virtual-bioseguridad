@@ -3,6 +3,7 @@ export const scenario = {
   module: 'Seguridad y diagnóstico molecular de Influenza A/B',
   mission: 'Ingreso seguro',
   sampleScenario: 'match' as 'match' | 'mismatch',
+  mission3: 'Trabajo seguro',
   safetyRisks: [
     'Exposición accidental a material clínico simulado',
     'Salpicaduras',

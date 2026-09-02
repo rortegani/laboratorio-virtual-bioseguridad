@@ -16,6 +16,13 @@ export class Laboratory {
   readonly doorRoot = new THREE.Group();
   readonly sampleRoot = new THREE.Group();
   readonly computerRoot = new THREE.Group();
+  readonly cabinetRoot = new THREE.Group();
+  readonly pipetteRoot = new THREE.Group();
+  readonly workAreaRoot = new THREE.Group();
+  readonly workSampleRoot = new THREE.Group();
+  readonly sharedSurfaceRoot = new THREE.Group();
+  readonly safetyMeasureRoot = new THREE.Group();
+  readonly virtualHandRoot = new THREE.Group();
   private doorOpen = false;
   private doorProgress = 0;
 
@@ -35,6 +42,8 @@ export class Laboratory {
   }
 
   openDoor(): void { this.doorOpen = true; }
+
+  showContamination(): void { this.sharedSurfaceRoot.traverse((child) => { if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) child.material.color.set(0xf09b62); }); }
 
   private build(): void {
     const mat = (color: number, roughness = 0.75) => new THREE.MeshStandardMaterial({ color, roughness });
@@ -83,5 +92,25 @@ export class Laboratory {
     const context = labelCanvas.getContext('2d'); if (context) { context.fillStyle = '#f2f7f4'; context.fillRect(0, 0, 256, 64); context.fillStyle = '#12343a'; context.font = 'bold 30px sans-serif'; context.fillText('SIM-001', 58, 40); }
     const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(labelCanvas) })); label.scale.set(1.4, 0.35, 1); label.position.set(0, 0.35, 0); this.sampleRoot.add(label);
     this.interactive.push({ root: sign }, { root: prep }, { root: sink }, { root: this.sampleRoot }, { root: this.computerRoot });
+    const workMaterial = mat(0x526d70);
+    this.cabinetRoot.position.set(-5, 1.5, 18.5); this.scene.add(this.cabinetRoot);
+    this.cabinetRoot.add(new THREE.Mesh(new THREE.BoxGeometry(3.2, 3, 1.1), workMaterial));
+    const cabinetOpening = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.4, 0.08), mat(0x172f35)); cabinetOpening.position.set(0, 0.2, -0.58); this.cabinetRoot.add(cabinetOpening);
+    this.walls.push(new THREE.Box3(new THREE.Vector3(-6.6, 0, 17.9), new THREE.Vector3(-3.4, 3, 19.1)));
+    this.workAreaRoot.position.set(0, 1, 19.4); this.scene.add(this.workAreaRoot);
+    this.workAreaRoot.add(new THREE.Mesh(new THREE.BoxGeometry(4.5, 2, 1.2), workMaterial));
+    this.walls.push(new THREE.Box3(new THREE.Vector3(-2.25, 0, 18.8), new THREE.Vector3(2.25, 2, 20)));
+    this.pipetteRoot.position.set(-0.8, 2.2, 18.75); this.scene.add(this.pipetteRoot);
+    const pipetteBody = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.5, 0.35), mat(0xd4e5df)); pipetteBody.rotation.z = -0.2; this.pipetteRoot.add(pipetteBody);
+    const pipetteTip = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.65, 12), mat(0x65c9b8)); pipetteTip.position.y = -0.95; this.pipetteRoot.add(pipetteTip);
+    this.workSampleRoot.position.set(0.6, 2.25, 18.8); this.scene.add(this.workSampleRoot);
+    const workTube = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 1.1, 16), mat(0x67c7bd, 0.35)); workTube.rotation.z = Math.PI / 2; this.workSampleRoot.add(workTube);
+    this.sharedSurfaceRoot.position.set(1.35, 2.05, 18.75); this.scene.add(this.sharedSurfaceRoot);
+    this.sharedSurfaceRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.12, 0.55), mat(0x253d43)));
+    this.virtualHandRoot.position.set(0.1, 2.15, 19.15); this.scene.add(this.virtualHandRoot);
+    this.virtualHandRoot.add(new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 10), mat(0x8dc9be)));
+    this.safetyMeasureRoot.position.set(3, 1.5, 19.8); this.scene.add(this.safetyMeasureRoot);
+    this.safetyMeasureRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.3, 0.18), mat(0x6d9c98)));
+    this.interactive.push({ root: this.cabinetRoot }, { root: this.pipetteRoot }, { root: this.workAreaRoot }, { root: this.workSampleRoot }, { root: this.safetyMeasureRoot }, { root: this.sharedSurfaceRoot });
   }
 }

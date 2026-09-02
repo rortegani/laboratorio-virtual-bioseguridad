@@ -9,6 +9,14 @@ export type TrainingSnapshot = {
   sampleVerified: boolean;
   sampleDiscrepancyReported: boolean;
   mission2Completed: boolean;
+  biosafetyCabinetReviewed: boolean;
+  pipetteReviewed: boolean;
+  workAreaReviewed: boolean;
+  virtualHandContaminated: boolean;
+  sharedSurfaceContaminated: boolean;
+  crossContaminationDetected: boolean;
+  crossContaminationAcknowledged: boolean;
+  mission3Completed: boolean;
 };
 
 export class TrainingState {
@@ -23,6 +31,14 @@ export class TrainingState {
     sampleVerified: false,
     sampleDiscrepancyReported: false,
     mission2Completed: false,
+    biosafetyCabinetReviewed: false,
+    pipetteReviewed: false,
+    workAreaReviewed: false,
+    virtualHandContaminated: false,
+    sharedSurfaceContaminated: false,
+    crossContaminationDetected: false,
+    crossContaminationAcknowledged: false,
+    mission3Completed: false,
   };
 
   private listeners = new Set<(state: TrainingSnapshot) => void>();

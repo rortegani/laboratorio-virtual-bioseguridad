@@ -44,3 +44,11 @@ La segunda misión se activa al completar el ingreso seguro. El estudiante exami
 La configuración `sampleScenario` en `src/data/scenario.ts` permite probar dos variantes sin aleatoriedad: `match` muestra `SIM-001` en el sistema y requiere aceptar la muestra; `mismatch` muestra `SIM-017` y requiere reportar la discrepancia. La misión no se completa sin examinar primero la muestra ni con una decisión incorrecta.
 
 Este sprint no incluye procesamiento molecular, RT-qPCR, pipeteo, contaminación, residuos, incidentes, backend, usuarios, VR, WebXR ni Sprint 3.
+
+## Sprint 3 — Trabajo seguro y contaminación cruzada
+
+La tercera misión se activa al completar la recepción de SIM-001. Incluye el reconocimiento conceptual de una Cabina de Seguridad Biológica, una micropipeta y la organización del área de trabajo.
+
+`Mission3Manager` controla el acceso, los reconocimientos y la finalización. `ContaminationManager` administra exclusivamente estados simulados para SIM-001, la mano virtual y la superficie compartida. El estudiante puede aplicar una medida institucional simulada antes de tocar el teclado (camino seguro) o reconocer la visualización `SIM-001 → Mano virtual → Teclado` si produce contaminación cruzada simulada.
+
+No se incluyen protocolos, parámetros, RT-qPCR, resultados moleculares, residuos, incidentes, derrames, puntuación, backend, VR, WebXR, Blender ni Sprint 4.

@@ -5,6 +5,8 @@ import { InteractionManager } from '../interaction/InteractionManager';
 import { TrainingState } from '../training/TrainingState';
 import { MissionManager } from '../training/MissionManager';
 import { Mission2Manager } from '../training/Mission2Manager';
+import { Mission3Manager } from '../training/Mission3Manager';
+import { ContaminationManager } from '../training/ContaminationManager';
 import { scenario } from '../data/scenario';
 import { Laboratory } from '../world/Laboratory';
 import { World } from '../world/World';
@@ -19,6 +21,8 @@ export class App {
   private readonly state = new TrainingState();
   private readonly mission = new MissionManager(this.state);
   private readonly mission2 = new Mission2Manager(this.state, scenario.sampleScenario);
+  private readonly mission3 = new Mission3Manager(this.state);
+  private readonly contamination = new ContaminationManager(this.state);
   private previousTime = 0;
 
   constructor(private readonly container: HTMLElement | null) { if (!container) throw new Error('App container not found'); this.ui = new UIManager(container); }
@@ -36,6 +40,10 @@ export class App {
     let mission2Registered = false;
     this.state.subscribe((snapshot) => {
       if (snapshot.mission1Completed && !mission2Registered) { mission2Registered = true; this.registerMission2Interactions(laboratory); }
+    });
+    let mission3Registered = false;
+    this.state.subscribe((snapshot) => {
+      if (snapshot.mission2Completed && !mission3Registered) { mission3Registered = true; this.registerMission3Interactions(laboratory); }
     });
     window.addEventListener('resize', () => this.world.resize(this.player.camera));
     this.canvas.addEventListener('click', () => { this.ui.setPointerHint(false); this.player.focus(); });
@@ -56,6 +64,17 @@ export class App {
     this.interaction.register(laboratory.sampleRoot, new InteractiveObject('sample-sim-001', 'Muestra SIM-001', 'sample', 4, () => { this.openModal(); this.ui.showSample(() => { const result = this.mission2.inspectSample(); if (!result.success) this.ui.showInspectionBlocked(); }); }));
     this.interaction.register(laboratory.computerRoot, new InteractiveObject('reception-computer', 'Sistema de información del laboratorio', 'computer', 4, () => { this.openModal(); this.ui.showComputer(scenario.sampleScenario, (decision) => this.ui.showVerificationResult(this.mission2.verifySampleDecision(decision))); }));
   }
+
+  private registerMission3Interactions(laboratory: Laboratory): void {
+    this.interaction.register(laboratory.cabinetRoot, new InteractiveObject('biosafety-cabinet', 'Cabina de Seguridad Biológica', 'cabinet', 4, () => { this.openModal(); this.ui.showConceptReview('CABINA DE SEGURIDAD BIOLÓGICA', 'Equipo de contención primaria que forma parte de las medidas de control determinadas mediante evaluación de riesgo. Su utilización depende del procedimiento institucional y de la evaluación de riesgo.', 'REGISTRAR RECONOCIMIENTO', () => { this.mission3.reviewCabinet(); this.checkMission3(); }); }));
+    this.interaction.register(laboratory.pipetteRoot, new InteractiveObject('conceptual-pipette', 'Micropipeta', 'pipette', 4, () => { this.openModal(); this.ui.showConceptReview('MICROPIPETA', 'Instrumento utilizado para transferir pequeños volúmenes. En esta simulación solo se evalúa el reconocimiento del instrumento dentro del flujo general de trabajo.', 'RECONOCIDA', () => { this.mission3.reviewPipette(); this.checkMission3(); }); }));
+    this.interaction.register(laboratory.workAreaRoot, new InteractiveObject('work-area', 'Organización del área', 'work-area', 4, () => { this.openModal(); this.ui.showConceptReview('ORGANIZACIÓN DEL FLUJO', 'Recepción → Área de trabajo → Procesamiento conceptual → Análisis. Mantener un flujo organizado ayuda a reducir errores y contaminación cruzada.', 'REVISAR ORGANIZACIÓN', () => { this.mission3.reviewWorkArea(); this.checkMission3(); }); }));
+    this.interaction.register(laboratory.workSampleRoot, new InteractiveObject('work-sample', 'SIM-001 en área de trabajo', 'work-sample', 4, () => { this.openModal(); this.contamination.touchSample(); this.ui.showConceptReview('TRANSFERENCIA SIMULADA', 'La mano virtual ha interactuado con SIM-001. Antes de tocar una superficie compartida, aplique la medida institucional correspondiente.', 'CONTINUAR', () => undefined); }));
+    this.interaction.register(laboratory.safetyMeasureRoot, new InteractiveObject('safety-measure', 'Medida simulada', 'safety-measure', 4, () => { this.openModal(); this.contamination.applySimulatedMeasure(); this.ui.showSafeFlow(() => undefined); }));
+    this.interaction.register(laboratory.sharedSurfaceRoot, new InteractiveObject('shared-surface', 'Teclado / superficie compartida', 'shared-surface', 4, () => { this.openModal(); const contaminated = this.contamination.touchSharedSurface(); if (contaminated) { laboratory.showContamination(); this.ui.showContamination(() => { this.mission3.acknowledgeError(); this.checkMission3(); }); } else { this.ui.showSafeFlow(() => this.checkMission3()); } }));
+  }
+
+  private checkMission3(): void { const result = this.mission3.complete(); if (result.success) this.ui.showMission3Result('MISIÓN 3 COMPLETADA'); }
 
   private openModal(): void { this.player.release(); this.ui.setPointerHint(true); }
   private loop(time: number, laboratory: Laboratory): void { const delta = Math.min((time - this.previousTime) / 1000, 0.05); this.previousTime = time; this.player.update(delta); laboratory.update(delta); this.interaction.update(); if (!this.state.snapshot.mission1Completed && this.state.snapshot.doorUnlocked && this.player.camera.position.z > 16) { this.mission.markMissionComplete(); this.ui.showComplete(); } this.world.render(this.player.camera); requestAnimationFrame((next) => this.loop(next, laboratory)); }
