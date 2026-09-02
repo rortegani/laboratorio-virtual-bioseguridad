@@ -19,7 +19,7 @@ export class ScoreManager {
       incident: snapshot.incidentAcknowledged && snapshot.unsafeActivityStopped && snapshot.incidentReported ? (snapshot.incidentIgnored ? 3 : scoring.incident) : 0,
       closeout: snapshot.mission5Completed ? Math.max(0, scoring.closeout - wrongWaste * scoring.wastePenalty) : 0,
     };
-    const criticalErrors = events.filter((event) => event.critical).map((event) => ({ code: event.type as CriticalErrorCode, description: event.description }));
+    const criticalErrors = Array.from(new Map(events.filter((event) => event.critical).map((event) => [event.type, { code: event.type as CriticalErrorCode, description: event.description }])).values());
     const improvements: string[] = []; if (snapshot.crossContaminationDetected) improvements.push('Generó contaminación cruzada simulada.'); if (snapshot.incidentIgnored) improvements.push('Inicialmente ignoró una condición anormal.'); if (wrongMolecular > 0) improvements.push('Realizó una interpretación incorrecta antes de corregir.'); if (wrongReception > 0) improvements.push('Necesitó corregir una decisión de recepción.');
     const strengths: string[] = []; if (snapshot.mission1Completed) strengths.push('Completó la preparación de ingreso.'); if (snapshot.mission2Completed) strengths.push('Verificó correctamente SIM-001.'); if (snapshot.biosafetyCabinetReviewed) strengths.push('Reconoció la Cabina de Seguridad Biológica.'); if (snapshot.mission4Completed) strengths.push('Interpretó correctamente el resultado molecular.'); if (snapshot.mission5Completed) strengths.push('Completó el cierre de la actividad.');
     const score = Math.min(100, Math.max(0, Object.values(sections).reduce((sum, value) => sum + value, 0)));
