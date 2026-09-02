@@ -4,6 +4,7 @@ export const scenario = {
   mission: 'Ingreso seguro',
   sampleScenario: 'match' as 'match' | 'mismatch',
   mission3: 'Trabajo seguro',
+  molecularScenario: 'valid' as 'valid' | 'invalid',
   safetyRisks: [
     'Exposición accidental a material clínico simulado',
     'Salpicaduras',

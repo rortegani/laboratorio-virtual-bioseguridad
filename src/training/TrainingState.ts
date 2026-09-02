@@ -21,6 +21,13 @@ export type TrainingSnapshot = {
   safeMeasureApplied: boolean;
   sharedSurfaceContacted: boolean;
   safeFlowCompleted: boolean;
+  molecularAreaReviewed: boolean;
+  molecularAnalysisStarted: boolean;
+  molecularAnalysisCompleted: boolean;
+  molecularResultReviewed: boolean;
+  molecularResultInterpreted: boolean;
+  molecularInvalidRecognized: boolean;
+  mission4Completed: boolean;
 };
 
 export class TrainingState {
@@ -47,6 +54,13 @@ export class TrainingState {
     safeMeasureApplied: false,
     sharedSurfaceContacted: false,
     safeFlowCompleted: false,
+    molecularAreaReviewed: false,
+    molecularAnalysisStarted: false,
+    molecularAnalysisCompleted: false,
+    molecularResultReviewed: false,
+    molecularResultInterpreted: false,
+    molecularInvalidRecognized: false,
+    mission4Completed: false,
   };
 
   private listeners = new Set<(state: TrainingSnapshot) => void>();

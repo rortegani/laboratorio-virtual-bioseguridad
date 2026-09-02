@@ -23,6 +23,9 @@ export class Laboratory {
   readonly sharedSurfaceRoot = new THREE.Group();
   readonly safetyMeasureRoot = new THREE.Group();
   readonly virtualHandRoot = new THREE.Group();
+  readonly molecularEquipmentRoot = new THREE.Group();
+  readonly molecularTerminalRoot = new THREE.Group();
+  readonly molecularResultRoot = new THREE.Group();
   private doorOpen = false;
   private doorProgress = 0;
 
@@ -109,6 +112,15 @@ export class Laboratory {
     this.sharedSurfaceRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.12, 0.55), mat(0x253d43)));
     this.virtualHandRoot.position.set(0.1, 2.15, 19.15); this.scene.add(this.virtualHandRoot);
     this.virtualHandRoot.add(new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 10), mat(0x8dc9be)));
+    const molecularTable = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.25, 2.1), mat(0x526d70)); molecularTable.position.set(6.7, 1.2, 19.3); this.scene.add(molecularTable);
+    this.walls.push(new THREE.Box3(new THREE.Vector3(5, 0, 18.25), new THREE.Vector3(8.4, 1.325, 20.35)));
+    this.molecularEquipmentRoot.position.set(6.1, 1.45, 18.85); this.scene.add(this.molecularEquipmentRoot);
+    this.molecularEquipmentRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.7, 2.1, 1.1), mat(0x4f8582)));
+    const equipmentLight = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.28, 0.08), mat(0x65c9b8, 0.35)); equipmentLight.position.set(0, 0.65, -0.58); this.molecularEquipmentRoot.add(equipmentLight);
+    this.molecularTerminalRoot.position.set(7.35, 2.15, 18.75); this.scene.add(this.molecularTerminalRoot);
+    this.molecularTerminalRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.9, 0.12), mat(0x1c343a)));
+    this.molecularResultRoot.position.set(4.8, 1.9, 19.75); this.scene.add(this.molecularResultRoot);
+    this.molecularResultRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.1, 0.14), mat(0x315f62)));
     this.safetyMeasureRoot.position.set(3, 1.5, 19.8); this.scene.add(this.safetyMeasureRoot);
     this.safetyMeasureRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.3, 0.18), mat(0x6d9c98)));
     this.interactive.push({ root: this.cabinetRoot }, { root: this.pipetteRoot }, { root: this.workAreaRoot }, { root: this.workSampleRoot }, { root: this.safetyMeasureRoot }, { root: this.sharedSurfaceRoot });

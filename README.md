@@ -52,3 +52,9 @@ La tercera misión se activa al completar la recepción de SIM-001. Incluye el r
 `Mission3Manager` controla el acceso, los reconocimientos y la finalización. `ContaminationManager` administra exclusivamente estados simulados para SIM-001, la mano virtual y la superficie compartida. El estudiante puede aplicar una medida institucional simulada antes de tocar el teclado (camino seguro) o reconocer la visualización `SIM-001 → Mano virtual → Teclado` si produce contaminación cruzada simulada.
 
 No se incluyen protocolos, parámetros, RT-qPCR, resultados moleculares, residuos, incidentes, derrames, puntuación, backend, VR, WebXR, Blender ni Sprint 4.
+
+## Sprint 4 — Diagnóstico molecular simulado
+
+La cuarta misión añade el `BIO-LAB MOLECULAR SYSTEM`, un equipo ficticio y una secuencia educativa de reconocimiento, análisis conceptual, revisión de resultado e interpretación. `molecularScenario` en `src/data/scenario.ts` permite probar `valid` (Influenza A detectado, Influenza B no detectado) o `invalid` (resultado no válido).
+
+La interpretación se valida en `Mission4Manager`; la interfaz no contiene parámetros operativos. No se muestran temperaturas, ciclos, Ct/Cq, volúmenes, reactivos, secuencias, primers, sondas ni instrucciones para ejecutar RT-qPCR real.

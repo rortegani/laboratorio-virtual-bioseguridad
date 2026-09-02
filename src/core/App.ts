@@ -7,6 +7,8 @@ import { MissionManager } from '../training/MissionManager';
 import { Mission2Manager } from '../training/Mission2Manager';
 import { Mission3Manager } from '../training/Mission3Manager';
 import { ContaminationManager } from '../training/ContaminationManager';
+import { Mission4Manager } from '../training/Mission4Manager';
+import { molecular } from '../data/molecular';
 import { scenario } from '../data/scenario';
 import { Laboratory } from '../world/Laboratory';
 import { World } from '../world/World';
@@ -23,6 +25,7 @@ export class App {
   private readonly mission2 = new Mission2Manager(this.state, scenario.sampleScenario);
   private readonly mission3 = new Mission3Manager(this.state);
   private readonly contamination = new ContaminationManager(this.state);
+  private readonly mission4 = new Mission4Manager(this.state, scenario.molecularScenario);
   private previousTime = 0;
 
   constructor(private readonly container: HTMLElement | null) { if (!container) throw new Error('App container not found'); this.ui = new UIManager(container); }
@@ -44,6 +47,10 @@ export class App {
     let mission3Registered = false;
     this.state.subscribe((snapshot) => {
       if (snapshot.mission2Completed && !mission3Registered) { mission3Registered = true; this.registerMission3Interactions(laboratory); }
+    });
+    let mission4Registered = false;
+    this.state.subscribe((snapshot) => {
+      if (snapshot.mission3Completed && !mission4Registered) { mission4Registered = true; this.registerMission4Interactions(laboratory); }
     });
     window.addEventListener('resize', () => this.world.resize(this.player.camera));
     this.canvas.addEventListener('click', () => { this.ui.setPointerHint(false); this.player.focus(); });
@@ -75,6 +82,12 @@ export class App {
   }
 
   private checkMission3(): void { const result = this.mission3.complete(); if (result.success) this.ui.showMission3Result('MISIÓN 3 COMPLETADA'); }
+
+  private registerMission4Interactions(laboratory: Laboratory): void {
+    this.interaction.register(laboratory.molecularEquipmentRoot, new InteractiveObject('molecular-equipment', molecular.equipment, 'molecular-equipment', 4, () => { this.openModal(); this.ui.showMolecularRecognition(() => { this.mission4.reviewArea(); }); }));
+    this.interaction.register(laboratory.molecularTerminalRoot, new InteractiveObject('molecular-terminal', 'Iniciar análisis simulado', 'molecular-terminal', 4, () => { this.openModal(); this.ui.showMolecularStart(() => { if (this.mission4.startAnalysis()) { this.ui.showAnalysisProgress(() => { this.mission4.completeAnalysis(); }); } else this.ui.showMolecularBlocked(); }); }));
+    this.interaction.register(laboratory.molecularResultRoot, new InteractiveObject('molecular-result', 'Resultado molecular', 'molecular-result', 4, () => { this.openModal(); this.ui.showMolecularResult(scenario.molecularScenario, () => { if (this.mission4.reviewResult()) this.ui.showMolecularQuestion(scenario.molecularScenario, (answer) => { const result = this.mission4.interpret(answer); this.ui.showMolecularInterpretation(result); if (result.correct) window.setTimeout(() => this.ui.showMission4Result(), 1800); }); else this.ui.showMolecularBlocked(); }); }));
+  }
 
   private openModal(): void { this.player.release(); this.ui.setPointerHint(true); }
   private loop(time: number, laboratory: Laboratory): void { const delta = Math.min((time - this.previousTime) / 1000, 0.05); this.previousTime = time; this.player.update(delta); laboratory.update(delta); this.interaction.update(); if (!this.state.snapshot.mission1Completed && this.state.snapshot.doorUnlocked && this.player.camera.position.z > 16) { this.mission.markMissionComplete(); this.ui.showComplete(); } this.world.render(this.player.camera); requestAnimationFrame((next) => this.loop(next, laboratory)); }
