@@ -84,6 +84,7 @@ export class TrainingState {
   private listeners = new Set<(state: TrainingSnapshot) => void>();
 
   get snapshot(): TrainingSnapshot { return { ...this.state }; }
+  reset(): void { const current = this.state; Object.keys(current).forEach((key) => { current[key as keyof TrainingSnapshot] = false as never; }); this.listeners.forEach((listener) => listener(this.snapshot)); }
 
   subscribe(listener: (state: TrainingSnapshot) => void): () => void {
     this.listeners.add(listener);

@@ -53,6 +53,16 @@ La tercera misión se activa al completar la recepción de SIM-001. Incluye el r
 
 No se incluyen protocolos, parámetros, RT-qPCR, resultados moleculares, residuos, incidentes, derrames, puntuación, backend, VR, WebXR, Blender ni Sprint 4.
 
+## Demo V1
+
+La Demo V1 integra cinco misiones: ingreso seguro, recepción de SIM-001, trabajo seguro, diagnóstico molecular simulado e incidente/residuos/cierre. Al finalizar se calcula una evaluación determinista de 0 a 100 mediante `ScoreManager`, se identifican errores críticos históricos y se muestra `APROBADO` solo con puntaje mínimo de 80 y cero errores críticos.
+
+`EventLog` conserva una cronología relativa de eventos de la sesión. El informe final presenta fortalezas, aspectos por mejorar, desglose por sección y cronología. La capacitación puede repetirse desde la pantalla final; el reinicio de página garantiza una sesión limpia sin listeners acumulados.
+
+## Alcance de seguridad
+
+Todo el material es educativo y simulado. No contiene procedimientos experimentales reales ni reemplaza un SOP institucional. La aplicación no representa una guía operativa para manipulación de patógenos y evita parámetros, cantidades, tiempos, temperaturas, reactivos, cultivos, secuencias y técnicas accionables.
+
 ## Sprint 5 — Incidente, residuos y cierre
 
 La quinta misión presenta un incidente simulado, detención de la actividad, reporte institucional, estación de emergencia, clasificación conceptual de tres residuos y una verificación explícita de cierre. `Mission5Manager` contiene las reglas de secuencia; `incident.ts` define decisiones, categorías y datos estáticos.
