@@ -26,6 +26,12 @@ export class Laboratory {
   readonly molecularEquipmentRoot = new THREE.Group();
   readonly molecularTerminalRoot = new THREE.Group();
   readonly molecularResultRoot = new THREE.Group();
+  readonly incidentRoot = new THREE.Group();
+  readonly activityControlRoot = new THREE.Group();
+  readonly reportSystemRoot = new THREE.Group();
+  readonly emergencyStationRoot = new THREE.Group();
+  readonly wasteRoot = new THREE.Group();
+  readonly closeoutRoot = new THREE.Group();
   private doorOpen = false;
   private doorProgress = 0;
 
@@ -69,7 +75,7 @@ export class Laboratory {
     addBox(new THREE.Vector3(0.25, 3, 6), new THREE.Vector3(-9, 1.5, 18), 0x31484e);
     addBox(new THREE.Vector3(0.25, 3, 6), new THREE.Vector3(9, 1.5, 18), 0x31484e);
     this.doorRoot.position.set(-DOOR_WIDTH / 2, 0, DOOR_Z); this.scene.add(this.doorRoot);
-    const panel = new THREE.Mesh(new THREE.BoxGeometry(DOOR_WIDTH, DOOR_HEIGHT, 0.18), mat(0x5a8b89)); panel.position.set(DOOR_WIDTH / 2, DOOR_HEIGHT / 2, 0); this.doorRoot.add(panel);
+    const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(DOOR_WIDTH, DOOR_HEIGHT, 0.18), mat(0x5a8b89)); doorPanel.position.set(DOOR_WIDTH / 2, DOOR_HEIGHT / 2, 0); this.doorRoot.add(doorPanel);
     this.doorCollision.set(new THREE.Vector3(-DOOR_WIDTH / 2, 0, DOOR_Z - 0.125), new THREE.Vector3(DOOR_WIDTH / 2, DOOR_HEIGHT, DOOR_Z + 0.125)); this.walls.push(this.doorCollision);
     const sign = new THREE.Group(); sign.position.set(-6.5, 2.1, 1.5); this.scene.add(sign);
     const signBoard = new THREE.Mesh(new THREE.BoxGeometry(3, 2, 0.16), mat(0xc4dfdc)); signBoard.rotation.y = 0.18; sign.add(signBoard);
@@ -121,6 +127,13 @@ export class Laboratory {
     this.molecularTerminalRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.9, 0.12), mat(0x1c343a)));
     this.molecularResultRoot.position.set(4.8, 1.9, 19.75); this.scene.add(this.molecularResultRoot);
     this.molecularResultRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.1, 0.14), mat(0x315f62)));
+    const addPanel = (root: THREE.Group, position: THREE.Vector3, color: number): void => { root.position.copy(position); this.scene.add(root); root.add(new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.6, 0.2), mat(color))); };
+    addPanel(this.incidentRoot, new THREE.Vector3(-7, 1.1, 19.6), 0xb7775f);
+    addPanel(this.activityControlRoot, new THREE.Vector3(-7, 1.1, 17.1), 0x5e8e89);
+    addPanel(this.reportSystemRoot, new THREE.Vector3(7, 1.1, 17.1), 0x5e8e89);
+    addPanel(this.emergencyStationRoot, new THREE.Vector3(7, 1.1, 20), 0x7e9b83);
+    addPanel(this.wasteRoot, new THREE.Vector3(-3.5, 1.1, 20), 0x718287);
+    addPanel(this.closeoutRoot, new THREE.Vector3(3.5, 1.1, 20), 0x708b91);
     this.safetyMeasureRoot.position.set(3, 1.5, 19.8); this.scene.add(this.safetyMeasureRoot);
     this.safetyMeasureRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.3, 0.18), mat(0x6d9c98)));
     this.interactive.push({ root: this.cabinetRoot }, { root: this.pipetteRoot }, { root: this.workAreaRoot }, { root: this.workSampleRoot }, { root: this.safetyMeasureRoot }, { root: this.sharedSurfaceRoot });

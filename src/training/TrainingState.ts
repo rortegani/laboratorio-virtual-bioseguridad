@@ -28,6 +28,15 @@ export type TrainingSnapshot = {
   molecularResultInterpreted: boolean;
   molecularInvalidRecognized: boolean;
   mission4Completed: boolean;
+  incidentDetected: boolean;
+  incidentAcknowledged: boolean;
+  unsafeActivityStopped: boolean;
+  incidentReported: boolean;
+  emergencyStationReviewed: boolean;
+  wasteClassificationCompleted: boolean;
+  closeoutReviewed: boolean;
+  mission5Completed: boolean;
+  incidentIgnored: boolean;
 };
 
 export class TrainingState {
@@ -61,6 +70,15 @@ export class TrainingState {
     molecularResultInterpreted: false,
     molecularInvalidRecognized: false,
     mission4Completed: false,
+    incidentDetected: false,
+    incidentAcknowledged: false,
+    unsafeActivityStopped: false,
+    incidentReported: false,
+    emergencyStationReviewed: false,
+    wasteClassificationCompleted: false,
+    closeoutReviewed: false,
+    mission5Completed: false,
+    incidentIgnored: false,
   };
 
   private listeners = new Set<(state: TrainingSnapshot) => void>();

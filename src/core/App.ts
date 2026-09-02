@@ -9,6 +9,8 @@ import { Mission3Manager } from '../training/Mission3Manager';
 import { ContaminationManager } from '../training/ContaminationManager';
 import { Mission4Manager } from '../training/Mission4Manager';
 import { molecular } from '../data/molecular';
+import { Mission5Manager } from '../training/Mission5Manager';
+import { type WasteItem } from '../data/incident';
 import { scenario } from '../data/scenario';
 import { Laboratory } from '../world/Laboratory';
 import { World } from '../world/World';
@@ -26,6 +28,7 @@ export class App {
   private readonly mission3 = new Mission3Manager(this.state);
   private readonly contamination = new ContaminationManager(this.state);
   private readonly mission4 = new Mission4Manager(this.state, scenario.molecularScenario);
+  private readonly mission5 = new Mission5Manager(this.state);
   private previousTime = 0;
 
   constructor(private readonly container: HTMLElement | null) { if (!container) throw new Error('App container not found'); this.ui = new UIManager(container); }
@@ -51,6 +54,11 @@ export class App {
     let mission4Registered = false;
     this.state.subscribe((snapshot) => {
       if (snapshot.mission3Completed && !mission4Registered) { mission4Registered = true; this.registerMission4Interactions(laboratory); }
+    });
+    let mission5Registered = false;
+    this.state.subscribe((snapshot) => {
+      if (snapshot.mission4Completed && !mission5Registered) { mission5Registered = true; this.registerMission5Interactions(laboratory); }
+      this.ui.setMission5(snapshot);
     });
     window.addEventListener('resize', () => this.world.resize(this.player.camera));
     this.canvas.addEventListener('click', () => { this.ui.setPointerHint(false); this.player.focus(); });
@@ -82,6 +90,17 @@ export class App {
   }
 
   private checkMission3(): void { const result = this.mission3.complete(); if (result.success) this.ui.showMission3Result('MISIÓN 3 COMPLETADA'); }
+
+  private registerMission5Interactions(laboratory: Laboratory): void {
+    this.interaction.register(laboratory.incidentRoot, new InteractiveObject('simulated-incident', 'Condición anormal detectada', 'incident', 4, () => { this.openModal(); this.ui.showIncident((decision) => { if (this.mission5.handleIncident(decision) && decision === 'acknowledge') this.ui.showIncidentMessage('INCIDENTE RECONOCIDO', 'La condición anormal ha sido identificada. El siguiente paso es detener la actividad insegura y reportar el evento.'); else this.ui.showIncidentMessage('CONDUCTA INSEGURA REGISTRADA', 'La simulación ha registrado que se continuó o ignoró una condición anormal. Ante un incidente, debe detenerse la actividad y seguirse el procedimiento institucional correspondiente.'); }); }));
+    this.interaction.register(laboratory.activityControlRoot, new InteractiveObject('activity-control', 'Control de actividad', 'activity-control', 4, () => { this.openModal(); this.ui.showConceptReview('CONTROL DE ACTIVIDAD', 'Ante una condición anormal, la simulación requiere detener la actividad antes de continuar.', 'DETENER ACTIVIDAD', () => { if (!this.mission5.stopActivity()) this.ui.showMolecularBlocked(); }); }));
+    this.interaction.register(laboratory.reportSystemRoot, new InteractiveObject('incident-report', 'Sistema de reporte', 'incident-report', 4, () => { this.openModal(); this.ui.showReport(() => { if (this.mission5.reportIncident()) this.ui.showIncidentMessage('REPORTE REGISTRADO', 'El incidente fue registrado en la simulación. Siga el procedimiento institucional correspondiente para este tipo de evento.'); else this.ui.showMolecularBlocked(); }); }));
+    this.interaction.register(laboratory.emergencyStationRoot, new InteractiveObject('emergency-station', 'Estación de emergencia', 'emergency-station', 4, () => { this.openModal(); this.ui.showEmergency(() => { this.mission5.reviewEmergencyStation(); }); }));
+    this.interaction.register(laboratory.wasteRoot, new InteractiveObject('simulated-waste', 'Zona de residuos', 'waste', 4, () => { this.openModal(); this.runWasteExercise(laboratory); }));
+    this.interaction.register(laboratory.closeoutRoot, new InteractiveObject('closeout', 'Verificación de cierre', 'closeout', 4, () => { this.openModal(); this.ui.showCloseout(this.state.snapshot, () => { const result = this.mission5.confirmCloseout(); if (result.success) this.ui.showFinalize(() => { if (this.mission5.complete()) this.ui.showMission5Complete(); }); }); }));
+  }
+
+  private runWasteExercise(_laboratory: Laboratory): void { const items: Array<[WasteItem, string]> = [['general_item', 'Material no contaminado'], ['simulated_biological_item', 'Material biológico SIMULADO'], ['simulated_sharps', 'Elemento cortopunzante SIMULADO']]; let index = 0; const next = (): void => { if (index >= items.length) { this.ui.showWasteComplete(); return; } const [item, label] = items[index]; this.ui.showWasteItem(label, (category) => { const result = this.mission5.classifyWaste(item, category); if (!result.correct) this.ui.showWasteIncorrect(next); else { index += 1; next(); } }); }; next(); }
 
   private registerMission4Interactions(laboratory: Laboratory): void {
     this.interaction.register(laboratory.molecularEquipmentRoot, new InteractiveObject('molecular-equipment', molecular.equipment, 'molecular-equipment', 4, () => { this.openModal(); this.ui.showMolecularRecognition(() => { this.mission4.reviewArea(); }); }));

@@ -53,6 +53,12 @@ La tercera misión se activa al completar la recepción de SIM-001. Incluye el r
 
 No se incluyen protocolos, parámetros, RT-qPCR, resultados moleculares, residuos, incidentes, derrames, puntuación, backend, VR, WebXR, Blender ni Sprint 4.
 
+## Sprint 5 — Incidente, residuos y cierre
+
+La quinta misión presenta un incidente simulado, detención de la actividad, reporte institucional, estación de emergencia, clasificación conceptual de tres residuos y una verificación explícita de cierre. `Mission5Manager` contiene las reglas de secuencia; `incident.ts` define decisiones, categorías y datos estáticos.
+
+`incidentIgnored` es un estado histórico y no se borra si el estudiante corrige posteriormente su conducta. No se incluyen productos, cantidades, tiempos, técnicas reales de descontaminación, instrucciones de manipulación, puntuación, `ScoreManager`, `EventLog` ni Sprint 6.
+
 ## Sprint 4 — Diagnóstico molecular simulado
 
 La cuarta misión añade el `BIO-LAB MOLECULAR SYSTEM`, un equipo ficticio y una secuencia educativa de reconocimiento, análisis conceptual, revisión de resultado e interpretación. `molecularScenario` en `src/data/scenario.ts` permite probar `valid` (Influenza A detectado, Influenza B no detectado) o `invalid` (resultado no válido).
