@@ -53,7 +53,7 @@ export class App {
   }
 
   private registerMission2Interactions(laboratory: Laboratory): void {
-    this.interaction.register(laboratory.sampleRoot, new InteractiveObject('sample-sim-001', 'Muestra SIM-001', 'sample', 4, () => { this.openModal(); const result = this.mission2.inspectSample(); if (result.success) this.ui.showSample(() => undefined); else this.ui.showInspectionBlocked(); }));
+    this.interaction.register(laboratory.sampleRoot, new InteractiveObject('sample-sim-001', 'Muestra SIM-001', 'sample', 4, () => { this.openModal(); this.ui.showSample(() => { const result = this.mission2.inspectSample(); if (!result.success) this.ui.showInspectionBlocked(); }); }));
     this.interaction.register(laboratory.computerRoot, new InteractiveObject('reception-computer', 'Sistema de información del laboratorio', 'computer', 4, () => { this.openModal(); this.ui.showComputer(scenario.sampleScenario, (decision) => this.ui.showVerificationResult(this.mission2.verifySampleDecision(decision))); }));
   }
 
