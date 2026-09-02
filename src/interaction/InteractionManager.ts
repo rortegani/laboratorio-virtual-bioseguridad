@@ -13,8 +13,11 @@ export class InteractionManager {
   update(): void {
     this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
     const hits = this.raycaster.intersectObjects([...this.objects.keys()], true);
-    const hit = hits.find((entry) => entry.distance <= (this.objects.get(entry.object)?.maxDistance ?? 0));
-    const target = hit ? this.findTarget(hit.object) : null;
+    const target = hits.reduce<InteractiveObject | null>((selected, entry) => {
+      if (selected) return selected;
+      const candidate = this.findTarget(entry.object);
+      return candidate && entry.distance <= candidate.maxDistance ? candidate : null;
+    }, null);
     if (target !== this.current) { this.current = target; this.onTarget(target); }
   }
 
