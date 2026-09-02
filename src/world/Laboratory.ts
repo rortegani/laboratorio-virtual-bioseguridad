@@ -55,7 +55,16 @@ export class Laboratory {
   showContamination(): void { this.sharedSurfaceRoot.traverse((child) => { if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) child.material.color.set(0xf09b62); }); }
 
   private build(): void {
-    const mat = (color: number, roughness = 0.75) => new THREE.MeshStandardMaterial({ color, roughness });
+    const mat = (color: number, roughness = 0.75) => {
+      const baseColor = new THREE.Color(color);
+      return new THREE.MeshStandardMaterial({
+        color: baseColor,
+        roughness,
+        metalness: 0,
+        emissive: baseColor.clone(),
+        emissiveIntensity: 0.22,
+      });
+    };
     const floor = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH, 0.2, FLOOR_MAX_Z - FLOOR_MIN_Z + 1), mat(0x263b40));
     floor.position.set(0, -0.1, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(floor);
     const addBox = (size: THREE.Vector3, position: THREE.Vector3, color: number, collision = true): THREE.Mesh => {
