@@ -31,8 +31,9 @@ export class App {
     this.registerInteractions(laboratory, collisionSystem);
     window.addEventListener('resize', () => this.world.resize(this.player.camera));
     this.canvas.addEventListener('click', () => { this.ui.setPointerHint(false); this.player.focus(); });
+    document.addEventListener('pointerlockchange', () => this.ui.setPointerHint(document.pointerLockElement !== this.canvas));
     window.addEventListener('keydown', (event) => { if (event.code === 'KeyE') this.interaction.interact(); });
-    this.world.resize(this.player.camera); requestAnimationFrame((time) => this.loop(time, laboratory));
+    this.ui.setPointerHint(true); this.world.resize(this.player.camera); requestAnimationFrame((time) => this.loop(time, laboratory));
   }
 
   private registerInteractions(laboratory: Laboratory, collisionSystem: CollisionSystem): void {
