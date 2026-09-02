@@ -24,7 +24,7 @@ export class App {
 
   private enterLaboratory(): void {
     this.canvas.className = 'scene'; this.container?.prepend(this.canvas); this.ui.showGame();
-    const laboratory = new Laboratory(); this.world = new World(this.canvas); this.world.laboratory.scene.clear(); this.world.laboratory.scene.add(...laboratory.scene.children);
+    const laboratory = new Laboratory(); this.world = new World(this.canvas, laboratory);
     const collisionSystem = new CollisionSystem(laboratory.collisions);
     this.player = new PlayerController(this.canvas, collisionSystem);
     this.interaction = new InteractionManager(this.player.camera, (target) => this.ui.setTarget(target));

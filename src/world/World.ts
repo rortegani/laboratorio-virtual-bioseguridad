@@ -3,10 +3,11 @@ import { addLighting } from './Lighting';
 import { Laboratory } from './Laboratory';
 
 export class World {
-  readonly laboratory = new Laboratory();
+  readonly laboratory: Laboratory;
   readonly renderer: THREE.WebGLRenderer;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, laboratory: Laboratory) {
+    this.laboratory = laboratory;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.shadowMap.enabled = true;
