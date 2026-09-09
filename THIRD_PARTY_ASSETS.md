@@ -2,6 +2,10 @@
 
 Se incorporó un asset glTF de mobiliario ambiental. No se convirtió a GLB.
 
+Modern Wooden Cabinet se utilizó para validar el pipeline de assets, pero
+actualmente no se carga ni se utiliza en la escena. Su atribución y licencia
+se conservan para referencia.
+
 ## Laboratory table (pending)
 
 - Author: yuitop
