@@ -83,6 +83,13 @@ export class Laboratory {
     root.position.set(-DOOR_WIDTH / 2, 0, z); this.scene.add(root);
     const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(DOOR_WIDTH, DOOR_HEIGHT, 0.18), doorMaterial);
     doorPanel.position.set(DOOR_WIDTH / 2, DOOR_HEIGHT / 2, 0); root.add(doorPanel);
+    const frameMaterial = new THREE.MeshBasicMaterial({ color: 0x456f72, toneMapped: false });
+    const frameSide = new THREE.Mesh(new THREE.BoxGeometry(0.18, DOOR_HEIGHT + 0.35, 0.3), frameMaterial);
+    frameSide.position.set(0.08, (DOOR_HEIGHT + 0.35) / 2, 0); root.add(frameSide);
+    const frameTop = new THREE.Mesh(new THREE.BoxGeometry(DOOR_WIDTH + 0.18, 0.18, 0.3), frameMaterial);
+    frameTop.position.set(DOOR_WIDTH / 2, DOOR_HEIGHT + 0.08, 0); root.add(frameTop);
+    const handle = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.42, 0.12), new THREE.MeshBasicMaterial({ color: 0xe6f1ee, toneMapped: false }));
+    handle.position.set(DOOR_WIDTH - 0.45, DOOR_HEIGHT / 2, -0.16); root.add(handle);
     collision.set(new THREE.Vector3(-DOOR_WIDTH / 2, 0, z - 0.125), new THREE.Vector3(DOOR_WIDTH / 2, DOOR_HEIGHT, z + 0.125));
     this.walls.push(collision);
     this.doors.push({ root, collision, open: false, progress: 0 });
@@ -92,6 +99,12 @@ export class Laboratory {
     const mat = (color: number) => new THREE.MeshBasicMaterial({ color, toneMapped: false });
     const floor = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH, 0.2, FLOOR_MAX_Z - FLOOR_MIN_Z + 1), mat(0x9aa9ab));
     floor.position.set(0, -0.1, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(floor);
+    const ceiling = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH, 0.16, FLOOR_MAX_Z - FLOOR_MIN_Z + 1), mat(0xe6f1ee));
+    ceiling.position.set(0, 3.15, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(ceiling);
+    const baseboardMaterial = mat(0x829b9d);
+    const baseboardLeft = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.28, FLOOR_MAX_Z - FLOOR_MIN_Z), baseboardMaterial);
+    baseboardLeft.position.set(-8.82, 0.18, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(baseboardLeft);
+    const baseboardRight = baseboardLeft.clone(); baseboardRight.position.x = 8.82; this.scene.add(baseboardRight);
     const addBox = (size: THREE.Vector3, position: THREE.Vector3, color: number, collision = true): THREE.Mesh => {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z), mat(color));
       mesh.position.copy(position); this.scene.add(mesh);
@@ -106,6 +119,11 @@ export class Laboratory {
     this.createPartitionWithDoor(36, this.molecularDoorRoot, this.molecularDoorCollision, mat(0xc7d5d4), mat(0x5f9690));
     this.createPartitionWithDoor(47, this.incidentDoorRoot, this.incidentDoorCollision, mat(0xc7d5d4), mat(0x5f9690));
     addBox(new THREE.Vector3(ROOM_WIDTH, 3, 0.25), new THREE.Vector3(0, 1.5, FLOOR_MAX_Z), 0xc7d5d4);
+    this.addAreaLabel('ÁREA DE INGRESO', new THREE.Vector3(-5.5, 2.7, 2));
+    this.addAreaLabel('RECEPCIÓN Y VERIFICACIÓN', new THREE.Vector3(4.5, 2.7, 18.5));
+    this.addAreaLabel('ÁREA DE TRABAJO', new THREE.Vector3(-4.5, 2.7, 29));
+    this.addAreaLabel('DIAGNÓSTICO MOLECULAR', new THREE.Vector3(4.5, 2.7, 40));
+    this.addAreaLabel('INCIDENTES Y CIERRE', new THREE.Vector3(-4.5, 2.7, 51));
     const sign = new THREE.Group(); sign.position.set(-6.5, 2.1, 1.5); this.scene.add(sign);
     const signBoard = new THREE.Mesh(new THREE.BoxGeometry(3, 2, 0.16), mat(0xe6f1ee)); signBoard.rotation.y = 0.18; sign.add(signBoard);
     const symbol = new THREE.Mesh(new THREE.CircleGeometry(0.43, 24), mat(0x29494f)); symbol.position.z = -0.1; sign.add(symbol);
@@ -166,5 +184,13 @@ export class Laboratory {
     this.safetyMeasureRoot.position.set(3, 1.5, 32.8); this.scene.add(this.safetyMeasureRoot);
     this.safetyMeasureRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.3, 0.18), mat(0x65c9b8)));
     this.interactive.push({ root: this.cabinetRoot }, { root: this.pipetteRoot }, { root: this.workAreaRoot }, { root: this.workSampleRoot }, { root: this.safetyMeasureRoot }, { root: this.sharedSurfaceRoot });
+  }
+
+  private addAreaLabel(text: string, position: THREE.Vector3): void {
+    const canvas = document.createElement('canvas'); canvas.width = 768; canvas.height = 96;
+    const context = canvas.getContext('2d');
+    if (context) { context.fillStyle = '#29494f'; context.fillRect(0, 0, canvas.width, canvas.height); context.strokeStyle = '#65c9b8'; context.lineWidth = 4; context.strokeRect(2, 2, canvas.width - 4, canvas.height - 4); context.fillStyle = '#e6f1ee'; context.font = 'bold 30px sans-serif'; context.textAlign = 'center'; context.fillText(text, canvas.width / 2, 59); }
+    const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthTest: false, toneMapped: false }));
+    label.position.copy(position); label.scale.set(4.2, 0.52, 1); label.renderOrder = 10; this.scene.add(label);
   }
 }
