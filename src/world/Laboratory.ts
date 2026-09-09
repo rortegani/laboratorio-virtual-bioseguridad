@@ -46,11 +46,16 @@ export class Laboratory {
 
   update(deltaTime: number): void {
     if (!this.doorOpen || this.doorProgress >= 1) return;
-    this.doorProgress = Math.min(1, this.doorProgress + deltaTime * 1.8);
-    this.doorRoot.rotation.y = -this.doorProgress * Math.PI / 2;
+    this.doorProgress = Math.min(1, this.doorProgress + deltaTime * 2.4);
+    this.doorRoot.rotation.y = this.doorProgress * Math.PI / 2;
   }
 
-  openDoor(): void { this.doorOpen = true; }
+  openDoor(): void {
+    if (this.doorOpen) return;
+    this.doorOpen = true;
+    this.doorProgress = 0;
+    this.doorRoot.rotation.y = 0;
+  }
 
   showContamination(): void { this.sharedSurfaceRoot.traverse((child) => { if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshBasicMaterial) child.material.color.set(0xf09b62); }); }
 
