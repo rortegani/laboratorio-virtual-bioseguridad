@@ -1,7 +1,14 @@
 import * as THREE from 'three';
+import { addLaboratoryWall } from './components/LaboratoryWall';
+import { addLaboratoryFloor } from './components/LaboratoryFloor';
+import { addLaboratoryCeiling } from './components/LaboratoryCeiling';
+import { addCeilingLight } from './components/CeilingLight';
+import { LaboratoryDoor } from './components/LaboratoryDoor';
+import { addGlassPanel } from './components/GlassPanel';
+import { addWallSign } from './components/WallSign';
+import { createLaboratoryMaterials } from './materials/LaboratoryMaterials';
 
 type BuiltObject = { root: THREE.Group; collision?: THREE.Box3 };
-type AnimatedDoor = { root: THREE.Group; collision: THREE.Box3; open: boolean; progress: number };
 
 const ROOM_WIDTH = 18;
 const DOOR_WIDTH = 2.2;
@@ -41,7 +48,7 @@ export class Laboratory {
   readonly workAreaDoorCollision = new THREE.Box3();
   readonly molecularDoorCollision = new THREE.Box3();
   readonly incidentDoorCollision = new THREE.Box3();
-  private readonly doors: AnimatedDoor[] = [];
+  private readonly doors: LaboratoryDoor[] = [];
 
   constructor() {
     this.scene.background = new THREE.Color(0x9fb7bb);
@@ -53,110 +60,60 @@ export class Laboratory {
   get collisions(): THREE.Box3[] { return this.walls; }
 
   update(deltaTime: number): void {
-    this.doors.forEach((door) => {
-      if (!door.open || door.progress >= 1) return;
-      door.progress = Math.min(1, door.progress + deltaTime * 2.4);
-      door.root.rotation.y = -door.progress * Math.PI / 2;
-    });
+    this.doors.forEach((door) => door.update(deltaTime));
   }
 
   openEntryDoor(): void { this.openDoor(this.entryDoorRoot); }
   openWorkAreaDoor(): void { this.openDoor(this.workAreaDoorRoot); }
   openMolecularDoor(): void { this.openDoor(this.molecularDoorRoot); }
   openIncidentDoor(): void { this.openDoor(this.incidentDoorRoot); }
-  isDoorOpen(root: THREE.Group): boolean { return this.doors.find((door) => door.root === root)?.open ?? false; }
+  isDoorOpen(root: THREE.Group): boolean { return this.doors.find((door) => door.root === root)?.isOpen() ?? false; }
 
   private openDoor(root: THREE.Group): void {
     const door = this.doors.find((candidate) => candidate.root === root);
-    if (!door || door.open) return;
-    door.open = true;
-    door.progress = 0;
-    door.root.rotation.y = 0;
+    door?.openDoor();
   }
 
   showContamination(): void { this.sharedSurfaceRoot.traverse((child) => { if (child instanceof THREE.Mesh && child.material instanceof THREE.Material && 'color' in child.material) (child.material as THREE.MeshBasicMaterial).color.set(0xf09b62); }); }
 
   private createPartitionWithDoor(z: number, root: THREE.Group, collision: THREE.Box3, wallMaterial: THREE.MeshStandardMaterial, doorMaterial: THREE.MeshStandardMaterial): void {
-    const wallSideWidth = (ROOM_WIDTH - DOOR_WIDTH) / 2;
-    const leftWall = new THREE.Mesh(new THREE.BoxGeometry(wallSideWidth, PARTITION_HEIGHT, 0.25), wallMaterial);
-    leftWall.position.set(-(ROOM_WIDTH + DOOR_WIDTH) / 4, PARTITION_HEIGHT / 2, z); this.scene.add(leftWall); this.walls.push(new THREE.Box3().setFromObject(leftWall));
-    const rightWall = new THREE.Mesh(new THREE.BoxGeometry(wallSideWidth, PARTITION_HEIGHT, 0.25), wallMaterial);
-    rightWall.position.set((ROOM_WIDTH + DOOR_WIDTH) / 4, PARTITION_HEIGHT / 2, z); this.scene.add(rightWall); this.walls.push(new THREE.Box3().setFromObject(rightWall));
-    const upperWall = new THREE.Mesh(new THREE.BoxGeometry(DOOR_WIDTH, PARTITION_HEIGHT - DOOR_HEIGHT, 0.25), wallMaterial);
-    upperWall.position.set(0, DOOR_HEIGHT + (PARTITION_HEIGHT - DOOR_HEIGHT) / 2, z); this.scene.add(upperWall); this.walls.push(new THREE.Box3().setFromObject(upperWall));
-    root.position.set(-DOOR_WIDTH / 2, 0, z); this.scene.add(root);
-    const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(DOOR_WIDTH, DOOR_HEIGHT, 0.18), doorMaterial);
-    doorPanel.position.set(DOOR_WIDTH / 2, DOOR_HEIGHT / 2, 0); root.add(doorPanel);
-    const frameMaterial = new THREE.MeshBasicMaterial({ color: 0x456f72, toneMapped: false });
-    const frameSide = new THREE.Mesh(new THREE.BoxGeometry(0.18, DOOR_HEIGHT + 0.35, 0.3), frameMaterial);
-    frameSide.position.set(-DOOR_WIDTH / 2, (DOOR_HEIGHT + 0.35) / 2, z); this.scene.add(frameSide);
-    const frameSideRight = frameSide.clone();
-    frameSideRight.position.x = DOOR_WIDTH / 2; this.scene.add(frameSideRight);
-    const frameTop = new THREE.Mesh(new THREE.BoxGeometry(DOOR_WIDTH + 0.18, 0.18, 0.3), frameMaterial);
-    frameTop.position.set(0, DOOR_HEIGHT + 0.08, z); this.scene.add(frameTop);
-    const handle = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.42, 0.12), new THREE.MeshBasicMaterial({ color: 0xe6f1ee, toneMapped: false }));
-    handle.position.set(DOOR_WIDTH - 0.45, DOOR_HEIGHT / 2, -0.16); root.add(handle);
-    const doorGlass = new THREE.Mesh(new THREE.BoxGeometry(1.35, 0.62, 0.035), new THREE.MeshPhysicalMaterial({ color: 0x9edbd5, transparent: true, opacity: 0.32, roughness: 0.22, metalness: 0, depthWrite: false, toneMapped: false }));
-    doorGlass.position.set(DOOR_WIDTH / 2, 2.12, -0.12); root.add(doorGlass);
-    collision.set(new THREE.Vector3(-DOOR_WIDTH / 2, 0, z - 0.125), new THREE.Vector3(DOOR_WIDTH / 2, DOOR_HEIGHT, z + 0.125));
-    this.walls.push(collision);
-    this.doors.push({ root, collision, open: false, progress: 0 });
+    const materials = createLaboratoryMaterials();
+    this.doors.push(new LaboratoryDoor({ scene: this.scene, collisions: this.walls, z, root, collision, roomWidth: ROOM_WIDTH, width: DOOR_WIDTH, height: DOOR_HEIGHT, partitionHeight: PARTITION_HEIGHT, wallMaterial, doorMaterial, frameMaterial: materials.frame, metalMaterial: materials.metal, identificationPlate: z === DOOR_Z }));
   }
 
   private build(): void {
+    const materials = createLaboratoryMaterials();
     const mat = (color: number, roughness = 0.78, metalness = 0.02) => new THREE.MeshStandardMaterial({ color, roughness, metalness, toneMapped: false });
-    const floorTexture = this.createFloorTexture();
-    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x9aa9ab, map: floorTexture, roughness: 0.65, metalness: 0, toneMapped: false });
-    const floor = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH, 0.2, FLOOR_MAX_Z - FLOOR_MIN_Z + 1), floorMaterial);
-    floor.position.set(0, -0.1, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(floor);
-    const entryFloor = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH - 0.2, 0.012, 16), new THREE.MeshStandardMaterial({ color: 0x9aa9ab, map: this.createSubtleFloorTexture(), roughness: 0.72, metalness: 0, toneMapped: false }));
-    entryFloor.position.set(0, 0.007, 7); this.scene.add(entryFloor);
-    const ceiling = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH, 0.16, FLOOR_MAX_Z - FLOOR_MIN_Z + 1), mat(0xe6f1ee, 0.9));
-    ceiling.position.set(0, 3.15, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(ceiling);
-    const floorAccent = mat(0x879b9d);
-    [24, 35, 46, 58].forEach((z) => { const seam = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH - 0.3, 0.012, 0.04), floorAccent); seam.position.set(0, 0.012, z); this.scene.add(seam); });
+    addLaboratoryFloor(this.scene, ROOM_WIDTH, FLOOR_MIN_Z, FLOOR_MAX_Z, materials.floor);
+    addLaboratoryCeiling(this.scene, ROOM_WIDTH, FLOOR_MIN_Z, FLOOR_MAX_Z, 3.15, materials.ceiling);
     const ledMaterial = mat(0xffffff, 0.6);
-    [-4.5, 4.5].forEach((x) => [7, 20, 31, 42, 53].forEach((z) => {
-      if (z === 7) {
-        const frame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.04, 0.72), mat(0x829b9d, 0.55));
-        frame.position.set(x, 3.06, z); this.scene.add(frame);
-        const diffuser = new THREE.Mesh(new THREE.BoxGeometry(1.82, 0.025, 0.46), ledMaterial);
-        diffuser.position.set(x, 3.085, z); this.scene.add(diffuser);
-      } else {
-        const led = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.035, 0.42), ledMaterial);
-        led.position.set(x, 3.05, z); this.scene.add(led);
-      }
-    }));
+    [-4.5, 4.5].forEach((x) => [7, 20, 31, 42, 53].forEach((z) => addCeilingLight(this.scene, new THREE.Vector3(x, 3.06, z), materials.frame, ledMaterial)));
     const baseboardMaterial = mat(0x829b9d);
     const baseboardLeft = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.28, FLOOR_MAX_Z - FLOOR_MIN_Z), baseboardMaterial);
     baseboardLeft.position.set(-8.82, 0.18, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(baseboardLeft);
     const baseboardRight = baseboardLeft.clone(); baseboardRight.position.x = 8.82; this.scene.add(baseboardRight);
     const addBox = (size: THREE.Vector3, position: THREE.Vector3, color: number, collision = true): THREE.Mesh => {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z), mat(color));
-      mesh.position.copy(position); this.scene.add(mesh);
-      if (collision) this.walls.push(new THREE.Box3().setFromObject(mesh));
-      return mesh;
+      return addLaboratoryWall(this.scene, this.walls, position, size, mat(color), collision);
     };
-    addBox(new THREE.Vector3(ROOM_WIDTH, 3, 0.25), new THREE.Vector3(0, 1.5, -1), 0xd7e1df);
-    addBox(new THREE.Vector3(0.25, 3, FLOOR_MAX_Z - FLOOR_MIN_Z), new THREE.Vector3(-9, 1.5, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2), 0xd7e1df);
-    addBox(new THREE.Vector3(0.25, 3, FLOOR_MAX_Z - FLOOR_MIN_Z), new THREE.Vector3(9, 1.5, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2), 0xd7e1df);
-    this.createPartitionWithDoor(DOOR_Z, this.entryDoorRoot, this.entryDoorCollision, mat(0xd7e1df), mat(0x5f9690));
-    this.createPartitionWithDoor(25, this.workAreaDoorRoot, this.workAreaDoorCollision, mat(0xc7d5d4), mat(0x5f9690));
-    this.createPartitionWithDoor(36, this.molecularDoorRoot, this.molecularDoorCollision, mat(0xc7d5d4), mat(0x5f9690));
-    this.createPartitionWithDoor(47, this.incidentDoorRoot, this.incidentDoorCollision, mat(0xc7d5d4), mat(0x5f9690));
-    addBox(new THREE.Vector3(ROOM_WIDTH, 3, 0.25), new THREE.Vector3(0, 1.5, FLOOR_MAX_Z), 0xc7d5d4);
+    addBox(new THREE.Vector3(ROOM_WIDTH, 3, 0.25), new THREE.Vector3(0, 1.5, -1), materials.wall.color.getHex());
+    addBox(new THREE.Vector3(0.25, 3, FLOOR_MAX_Z - FLOOR_MIN_Z), new THREE.Vector3(-9, 1.5, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2), materials.wall.color.getHex());
+    addBox(new THREE.Vector3(0.25, 3, FLOOR_MAX_Z - FLOOR_MIN_Z), new THREE.Vector3(9, 1.5, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2), materials.wall.color.getHex());
+    this.createPartitionWithDoor(DOOR_Z, this.entryDoorRoot, this.entryDoorCollision, materials.wall, materials.door);
+    this.createPartitionWithDoor(25, this.workAreaDoorRoot, this.workAreaDoorCollision, materials.secondaryWall, materials.door);
+    this.createPartitionWithDoor(36, this.molecularDoorRoot, this.molecularDoorCollision, materials.secondaryWall, materials.door);
+    this.createPartitionWithDoor(47, this.incidentDoorRoot, this.incidentDoorCollision, materials.secondaryWall, materials.door);
+    addBox(new THREE.Vector3(ROOM_WIDTH, 3, 0.25), new THREE.Vector3(0, 1.5, FLOOR_MAX_Z), materials.secondaryWall.color.getHex());
     const wallAccent = mat(0xb7c8c6);
     [-8.82, 8.82].forEach((x) => { const strip = new THREE.Mesh(new THREE.BoxGeometry(0.035, 2.15, FLOOR_MAX_Z - FLOOR_MIN_Z - 0.4), wallAccent); strip.position.set(x, 1.65, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(strip); });
     [DOOR_Z, 25, 36, 47].forEach((z) => { const header = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH - DOOR_WIDTH - 0.4, 0.12, 0.04), wallAccent); header.position.set(0, 2.85, z - 0.15); this.scene.add(header); });
-    this.addGlassPanel(new THREE.Vector3(-6.1, 1.9, 24.84), new THREE.Vector3(4.6, 1.25, 0.04));
-    this.addGlassPanel(new THREE.Vector3(6.1, 1.9, 47.16), new THREE.Vector3(4.6, 1.25, 0.04));
-    const sign = this.addPhysicalAreaSign('ÁREA DE INGRESO', new THREE.Vector3(-8.84, 2.18, 2.8));
-    this.addAreaLabel('RECEPCIÓN Y VERIFICACIÓN', new THREE.Vector3(4.5, 2.7, 18.5));
-    this.addAreaLabel('ÁREA DE TRABAJO', new THREE.Vector3(-4.5, 2.7, 29));
-    this.addAreaLabel('DIAGNÓSTICO MOLECULAR', new THREE.Vector3(4.5, 2.7, 40));
-    this.addAreaLabel('INCIDENTES Y CIERRE', new THREE.Vector3(-4.5, 2.7, 51));
+    addGlassPanel(this.scene, new THREE.Vector3(-6.1, 1.9, 24.84), new THREE.Vector3(4.6, 1.25, 0.04), materials.glass, materials.frame);
+    addGlassPanel(this.scene, new THREE.Vector3(6.1, 1.9, 47.16), new THREE.Vector3(4.6, 1.25, 0.04), materials.glass, materials.frame);
+    const sign = addWallSign(this.scene, 'ÁREA DE INGRESO', new THREE.Vector3(-8.84, 2.18, 2.8), 0, 2.9, 0.76, materials.signage, materials.accent);
+    addWallSign(this.scene, 'RECEPCIÓN Y VERIFICACIÓN', new THREE.Vector3(8.84, 2.18, 18.5), 0, 4.2, 0.52, materials.signage, materials.accent);
+    addWallSign(this.scene, 'ÁREA DE TRABAJO', new THREE.Vector3(-8.84, 2.18, 29), 0, 3.2, 0.52, materials.signage, materials.accent);
+    addWallSign(this.scene, 'DIAGNÓSTICO MOLECULAR', new THREE.Vector3(8.84, 2.18, 40), 0, 4.2, 0.52, materials.signage, materials.accent);
+    addWallSign(this.scene, 'INCIDENTES Y CIERRE', new THREE.Vector3(-8.84, 2.18, 51), 0, 3.8, 0.52, materials.signage, materials.accent);
     this.addEntryWallDetails(mat);
-    this.addEntryDoorDetails(mat);
     this.addEntryLighting();
     const prep = new THREE.Group(); prep.position.set(4, 1.1, 3); this.scene.add(prep);
     prep.add(new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.82, 0.78), mat(0x78999a)));
@@ -233,13 +190,6 @@ export class Laboratory {
     this.interactive.push({ root: this.cabinetRoot }, { root: this.pipetteRoot }, { root: this.workAreaRoot }, { root: this.workSampleRoot }, { root: this.safetyMeasureRoot }, { root: this.sharedSurfaceRoot });
   }
 
-  private addGlassPanel(position: THREE.Vector3, size: THREE.Vector3): void {
-    const glass = new THREE.Mesh(new THREE.BoxGeometry(size.x, size.y, size.z), new THREE.MeshPhysicalMaterial({ color: 0x9edbd5, transparent: true, opacity: 0.28, roughness: 0.22, metalness: 0, depthWrite: false, toneMapped: false }));
-    glass.position.copy(position); this.scene.add(glass);
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(size.x + 0.12, 0.08, 0.06), new THREE.MeshBasicMaterial({ color: 0x456f72, toneMapped: false }));
-    frame.position.set(position.x, position.y + size.y / 2, position.z); this.scene.add(frame);
-  }
-
   private addEntryWallDetails(material: (color: number, roughness?: number, metalness?: number) => THREE.MeshStandardMaterial): void {
     const sanitary = material(0xb7c8c6, 0.72);
     const clinical = material(0xc7d5d4, 0.78);
@@ -255,44 +205,11 @@ export class Laboratory {
     technicalPanel.position.set(8.84, 1.65, 9.2); this.scene.add(technicalPanel);
   }
 
-  private addEntryDoorDetails(material: (color: number, roughness?: number, metalness?: number) => THREE.MeshStandardMaterial): void {
-    const plate = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.22, 0.025), material(0xe6f1ee, 0.45, 0.2));
-    plate.position.set(DOOR_WIDTH / 2 + 0.42, 1.38, -0.105); this.entryDoorRoot.add(plate);
-    const plateInset = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.035, 0.012), material(0x65c9b8, 0.45));
-    plateInset.position.set(DOOR_WIDTH / 2 + 0.42, 1.38, -0.122); this.entryDoorRoot.add(plateInset);
-  }
-
   private addEntryLighting(): void {
     [-4.5, 4.5].forEach((x) => {
       const light = new THREE.PointLight(0xfff8ed, 0.55, 9, 2);
       light.position.set(x, 2.75, 7); this.scene.add(light);
     });
-  }
-
-  private addPhysicalAreaSign(text: string, position: THREE.Vector3): THREE.Group {
-    const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
-    const context = canvas.getContext('2d');
-    if (context) { context.fillStyle = '#e6f1ee'; context.fillRect(0, 0, canvas.width, canvas.height); context.strokeStyle = '#65c9b8'; context.lineWidth = 8; context.strokeRect(4, 4, canvas.width - 8, canvas.height - 8); context.fillStyle = '#29494f'; context.font = 'bold 34px sans-serif'; context.textAlign = 'center'; context.fillText(text, canvas.width / 2, 78); }
-    const group = new THREE.Group(); group.position.copy(position); this.scene.add(group);
-    const board = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.76, 2.9), new THREE.MeshStandardMaterial({ color: 0xe6f1ee, roughness: 0.6, metalness: 0.05, toneMapped: false }));
-    group.add(board);
-    const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.72, 0.58), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), toneMapped: false }));
-    sign.rotation.y = Math.PI / 2; sign.position.x = 0.035; group.add(sign);
-    return group;
-  }
-
-  private createFloorTexture(): THREE.CanvasTexture {
-    const canvas = document.createElement('canvas'); canvas.width = 96; canvas.height = 96;
-    const context = canvas.getContext('2d');
-    if (context) { context.fillStyle = '#9aa9ab'; context.fillRect(0, 0, 96, 96); context.strokeStyle = 'rgba(255,255,255,.14)'; context.lineWidth = 1; context.strokeRect(1, 1, 94, 94); context.beginPath(); context.moveTo(0, 48); context.lineTo(96, 48); context.moveTo(48, 0); context.lineTo(48, 96); context.stroke(); }
-    const texture = new THREE.CanvasTexture(canvas); texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(8, 28); texture.colorSpace = THREE.SRGBColorSpace; return texture;
-  }
-
-  private createSubtleFloorTexture(): THREE.CanvasTexture {
-    const canvas = document.createElement('canvas'); canvas.width = 96; canvas.height = 96;
-    const context = canvas.getContext('2d');
-    if (context) { context.fillStyle = '#9aa9ab'; context.fillRect(0, 0, 96, 96); context.fillStyle = 'rgba(255,255,255,.035)'; context.fillRect(7, 9, 38, 32); context.fillRect(58, 57, 31, 25); context.fillStyle = 'rgba(50,80,82,.025)'; context.fillRect(48, 18, 35, 28); }
-    const texture = new THREE.CanvasTexture(canvas); texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(8, 8); texture.colorSpace = THREE.SRGBColorSpace; return texture;
   }
 
   private configureShadows(): void {
@@ -305,11 +222,4 @@ export class Laboratory {
     });
   }
 
-  private addAreaLabel(text: string, position: THREE.Vector3): void {
-    const canvas = document.createElement('canvas'); canvas.width = 768; canvas.height = 96;
-    const context = canvas.getContext('2d');
-    if (context) { context.fillStyle = '#29494f'; context.fillRect(0, 0, canvas.width, canvas.height); context.strokeStyle = '#65c9b8'; context.lineWidth = 4; context.strokeRect(2, 2, canvas.width - 4, canvas.height - 4); context.fillStyle = '#e6f1ee'; context.font = 'bold 30px sans-serif'; context.textAlign = 'center'; context.fillText(text, canvas.width / 2, 59); }
-    const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthTest: true, toneMapped: false }));
-    label.position.copy(position); label.scale.set(4.2, 0.52, 1); label.renderOrder = 10; this.scene.add(label);
-  }
 }
