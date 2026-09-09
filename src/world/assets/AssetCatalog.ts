@@ -11,14 +11,14 @@ export type AssetDefinition = {
   license?: 'CC0' | 'CC BY';
 };
 
-/** Entradas preparadas, aún pendientes de obtener como archivos GLB verificables. */
+/** Catálogo de modelos incorporados y pendientes de verificación. */
 export const assets: Record<string, AssetDefinition> = {
   laboratoryTable: {
     id: 'laboratory-table', path: '/models/furniture/laboratory-table.glb', category: 'furniture', status: 'pending',
     source: 'https://sketchfab.com/3d-models/laboratory-table-e1321eb1e321486f8862d52bcacc2b36', author: 'yuitop', license: 'CC BY',
   },
   laboratoryCabinet: {
-    id: 'laboratory-cabinet', path: '/models/furniture/laboratory-cabinet.glb', category: 'furniture', status: 'pending',
+    id: 'laboratory-cabinet', path: '/models/furniture/modern_wooden_cabinet/modern_wooden_cabinet_1k.gltf', category: 'furniture', status: 'available',
     source: 'https://polyhaven.com/a/modern_wooden_cabinet', author: 'Patrik Pangerl', license: 'CC0',
   },
   monitor: {

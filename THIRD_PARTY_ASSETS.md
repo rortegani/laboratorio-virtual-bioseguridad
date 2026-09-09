@@ -1,7 +1,6 @@
 # Third-party 3D assets
 
-No se incorporaron archivos GLB en este commit. Las entradas del catálogo
-están marcadas como `pending` y no se cargan en el laboratorio.
+Se incorporó un asset glTF de mobiliario ambiental. No se convirtió a GLB.
 
 ## Laboratory table (pending)
 
@@ -11,17 +10,18 @@ están marcadas como `pending` y no se cargan en el laboratorio.
 - File: `public/models/furniture/laboratory-table.glb` (no incorporado)
 - Modifications: ninguna; requiere descarga/verificación manual antes de incluirlo.
 
-## Modern Wooden Cabinet (pending)
+## Modern Wooden Cabinet (incorporado)
 
 - Author: Patrik Pangerl
 - Source: https://polyhaven.com/a/modern_wooden_cabinet
 - License: CC0
-- File: `public/models/furniture/laboratory-cabinet.glb` (no incorporado)
-- Modifications: ninguna; la descarga automática no pudo resolver el host de la API en este entorno.
-
-`MANUAL_DOWNLOAD_REQUIRED`: en la página oficial seleccionar `glTF`, resolución
-`2K` y descargar el archivo/paquete público. No marcarlo como `available` hasta
-que exista un GLB o un glTF con sus archivos asociados en el repositorio.
+- Resolution: 1K
+- Format: glTF
+- File: `public/models/furniture/modern_wooden_cabinet/modern_wooden_cabinet_1k.gltf`
+- Binary: `public/models/furniture/modern_wooden_cabinet/modern_wooden_cabinet.bin`
+- Textures: `textures/modern_wooden_cabinet_nor_gl_1k.jpg`, `textures/modern_wooden_cabinet_arm_1k.jpg`, `textures/modern_wooden_cabinet_diff_1k.jpg`
+- Modifications: ninguna
+- Fecha de incorporación: 2026-09-08
 
 ## Monitor (pending)
 
@@ -42,10 +42,8 @@ para un laboratorio clínico. No se descargó ni se incluyó.
 
 ## Descarga manual pendiente
 
-No hay archivos GLB para copiar en el repositorio en este commit. Cuando se
-verifique una fuente compatible, los destinos previstos son:
+Los siguientes assets siguen pendientes; no se descargaron ni se incluyeron:
 
 - `public/models/furniture/laboratory-table.glb`
-- `public/models/furniture/laboratory-cabinet.glb`
 - `public/models/equipment/monitor.glb`
 - `public/models/furniture/trash-bin.glb`
