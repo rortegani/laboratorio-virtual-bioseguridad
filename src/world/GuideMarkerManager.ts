@@ -12,10 +12,10 @@ export class GuideMarkerManager {
   }
   setTargets(targets: Record<string, THREE.Object3D>): void { this.targets = new Map(Object.entries(targets)); }
   update(step: GuideStep | undefined, guided: boolean): void {
-    if (!guided || !step?.targetKey) { this.marker.visible = false; this.currentId = undefined; return; }
+    if (!guided || !step?.targetKey) { this.marker.visible = false; return; }
     const target = this.targets.get(step.targetKey);
     if (!target) { this.marker.visible = false; return; }
-    if (this.currentId !== step.id) { this.marker.material = new THREE.SpriteMaterial({ map: this.texture(`PASO ${step.order}\n${step.label}`), transparent: true, depthTest: false, toneMapped: false }); this.currentId = step.id; }
+    if (this.currentId !== step.id) { const previous = this.marker.material as THREE.SpriteMaterial; previous.map?.dispose(); previous.dispose(); this.marker.material = new THREE.SpriteMaterial({ map: this.texture(`PASO ${step.order}\n${step.label}`), transparent: true, depthTest: false, toneMapped: false }); this.currentId = step.id; }
     target.getWorldPosition(this.marker.position);
     this.marker.position.y += 1.8;
     this.marker.scale.set(2.8, 0.7, 1);
