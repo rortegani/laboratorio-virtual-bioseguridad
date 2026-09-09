@@ -20,6 +20,7 @@ Se incorporó un asset glTF de mobiliario ambiental. No se convirtió a GLB.
 - File: `public/models/furniture/modern_wooden_cabinet/modern_wooden_cabinet_1k.gltf`
 - Binary: `public/models/furniture/modern_wooden_cabinet/modern_wooden_cabinet.bin`
 - Textures: `textures/modern_wooden_cabinet_nor_gl_1k.jpg`, `textures/modern_wooden_cabinet_arm_1k.jpg`, `textures/modern_wooden_cabinet_diff_1k.jpg`
+- Use: auxiliary reception furniture in Zone 2; it does not replace `cabinetRoot`.
 - Modifications: ninguna
 - Fecha de incorporación: 2026-09-08
 

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { AssetManager } from './assets/AssetManager';
+import { assets } from './assets/AssetCatalog';
 
 type BuiltObject = { root: THREE.Group; collision?: THREE.Box3 };
 type AnimatedDoor = { root: THREE.Group; collision: THREE.Box3; open: boolean; progress: number };
@@ -189,9 +190,9 @@ export class Laboratory {
     this.safetyMeasureRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.3, 0.18), mat(0x65c9b8)));
     this.interactive.push({ root: this.cabinetRoot }, { root: this.pipetteRoot }, { root: this.workAreaRoot }, { root: this.workSampleRoot }, { root: this.safetyMeasureRoot }, { root: this.sharedSurfaceRoot });
     void this.assetManager.attachOptionalModel({
-      path: '/models/furniture/modern_wooden_cabinet/modern_wooden_cabinet_1k.gltf',
+      path: assets.laboratoryCabinet.path,
       root: this.scene,
-      position: [-6.1, 0, 20.2],
+      position: [-7.5, 0, 20.2],
       rotation: [0, 0, 0],
       scale: [1, 1, 1],
     });
