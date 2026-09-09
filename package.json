@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "clean:source": "node scripts/clean-source-artifacts.mjs",
+    "predev": "npm run clean:source",
+    "prebuild": "npm run clean:source",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
