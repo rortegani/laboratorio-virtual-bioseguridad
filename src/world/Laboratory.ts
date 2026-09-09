@@ -109,12 +109,24 @@ export class Laboratory {
     const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x9aa9ab, map: floorTexture, roughness: 0.65, metalness: 0, toneMapped: false });
     const floor = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH, 0.2, FLOOR_MAX_Z - FLOOR_MIN_Z + 1), floorMaterial);
     floor.position.set(0, -0.1, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(floor);
+    const entryFloor = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH - 0.2, 0.012, 16), new THREE.MeshStandardMaterial({ color: 0x9aa9ab, map: this.createSubtleFloorTexture(), roughness: 0.72, metalness: 0, toneMapped: false }));
+    entryFloor.position.set(0, 0.007, 7); this.scene.add(entryFloor);
     const ceiling = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH, 0.16, FLOOR_MAX_Z - FLOOR_MIN_Z + 1), mat(0xe6f1ee, 0.9));
     ceiling.position.set(0, 3.15, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(ceiling);
     const floorAccent = mat(0x879b9d);
-    [14, 24, 35, 46, 58].forEach((z) => { const seam = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH - 0.3, 0.012, 0.04), floorAccent); seam.position.set(0, 0.012, z); this.scene.add(seam); });
-    const ledMaterial = mat(0xffffff);
-    [-4.5, 4.5].forEach((x) => [7, 20, 31, 42, 53].forEach((z) => { const led = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.035, 0.42), ledMaterial); led.position.set(x, 3.05, z); this.scene.add(led); }));
+    [24, 35, 46, 58].forEach((z) => { const seam = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH - 0.3, 0.012, 0.04), floorAccent); seam.position.set(0, 0.012, z); this.scene.add(seam); });
+    const ledMaterial = mat(0xffffff, 0.6);
+    [-4.5, 4.5].forEach((x) => [7, 20, 31, 42, 53].forEach((z) => {
+      if (z === 7) {
+        const frame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.04, 0.72), mat(0x829b9d, 0.55));
+        frame.position.set(x, 3.06, z); this.scene.add(frame);
+        const diffuser = new THREE.Mesh(new THREE.BoxGeometry(1.82, 0.025, 0.46), ledMaterial);
+        diffuser.position.set(x, 3.085, z); this.scene.add(diffuser);
+      } else {
+        const led = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.035, 0.42), ledMaterial);
+        led.position.set(x, 3.05, z); this.scene.add(led);
+      }
+    }));
     const baseboardMaterial = mat(0x829b9d);
     const baseboardLeft = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.28, FLOOR_MAX_Z - FLOOR_MIN_Z), baseboardMaterial);
     baseboardLeft.position.set(-8.82, 0.18, (FLOOR_MIN_Z + FLOOR_MAX_Z) / 2); this.scene.add(baseboardLeft);
@@ -138,24 +150,32 @@ export class Laboratory {
     [DOOR_Z, 25, 36, 47].forEach((z) => { const header = new THREE.Mesh(new THREE.BoxGeometry(ROOM_WIDTH - DOOR_WIDTH - 0.4, 0.12, 0.04), wallAccent); header.position.set(0, 2.85, z - 0.15); this.scene.add(header); });
     this.addGlassPanel(new THREE.Vector3(-6.1, 1.9, 24.84), new THREE.Vector3(4.6, 1.25, 0.04));
     this.addGlassPanel(new THREE.Vector3(6.1, 1.9, 47.16), new THREE.Vector3(4.6, 1.25, 0.04));
-    this.addAreaLabel('ÁREA DE INGRESO', new THREE.Vector3(-5.5, 2.7, 2));
+    const sign = this.addPhysicalAreaSign('ÁREA DE INGRESO', new THREE.Vector3(-8.84, 2.18, 2.8));
     this.addAreaLabel('RECEPCIÓN Y VERIFICACIÓN', new THREE.Vector3(4.5, 2.7, 18.5));
     this.addAreaLabel('ÁREA DE TRABAJO', new THREE.Vector3(-4.5, 2.7, 29));
     this.addAreaLabel('DIAGNÓSTICO MOLECULAR', new THREE.Vector3(4.5, 2.7, 40));
     this.addAreaLabel('INCIDENTES Y CIERRE', new THREE.Vector3(-4.5, 2.7, 51));
-    const sign = new THREE.Group(); sign.position.set(-6.5, 2.1, 1.5); this.scene.add(sign);
-    const signBoard = new THREE.Mesh(new THREE.BoxGeometry(3, 2, 0.16), mat(0xe6f1ee)); signBoard.rotation.y = 0.18; sign.add(signBoard);
-    const symbol = new THREE.Mesh(new THREE.CircleGeometry(0.43, 24), mat(0x29494f)); symbol.position.z = -0.1; sign.add(symbol);
+    this.addEntryWallDetails(mat);
+    this.addEntryDoorDetails(mat);
+    this.addEntryLighting();
     const prep = new THREE.Group(); prep.position.set(4, 1.1, 3); this.scene.add(prep);
-    prep.add(new THREE.Mesh(new THREE.BoxGeometry(3, 2.2, 0.8), mat(0x78999a)));
-    for (let i = -1; i <= 1; i++) { const item = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.65, 0.3), mat(0xe6f1ee)); item.position.set(i * 0.8, 1.45, -0.45); prep.add(item); }
+    prep.add(new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.82, 0.78), mat(0x78999a)));
+    const prepTop = new THREE.Mesh(new THREE.BoxGeometry(3, 0.12, 0.86), mat(0xe6f1ee, 0.55, 0.08)); prepTop.position.y = 0.47; prep.add(prepTop);
+    const prepBack = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.8, 0.12), mat(0xc7d5d4)); prepBack.position.set(0, 1.35, 0.31); prep.add(prepBack);
+    const prepShelf = new THREE.Mesh(new THREE.BoxGeometry(2.55, 0.1, 0.55), mat(0x829b9d)); prepShelf.position.set(0, 1.2, -0.02); prep.add(prepShelf);
+    [-0.85, 0, 0.85].forEach((x) => { const item = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.48, 0.28), mat(0xe6f1ee)); item.position.set(x, 0.82, -0.18); prep.add(item); });
+    const prepSign = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.24, 0.035), mat(0x65c9b8)); prepSign.position.set(0, 2.02, 0.23); prep.add(prepSign);
     const sink = new THREE.Group(); sink.position.set(-4, 0.85, 7); this.scene.add(sink);
     const sinkBody = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.7, 0.8), mat(0xb7c8c6)); sinkBody.position.y = -0.35; sink.add(sinkBody);
     const sinkTop = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.12, 0.85), mat(0xe6f1ee, 0.55, 0.08)); sinkTop.position.y = 0.04; sink.add(sinkTop);
     const basin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.15, 0.55), mat(0x829b9d)); basin.position.set(0, 0.13, -0.2); sink.add(basin);
-    const tap = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.65, 12), mat(0xe6f1ee, 0.35, 0.55)); tap.position.set(0, 0.56, -0.3); sink.add(tap);
+    const basinInner = new THREE.Mesh(new THREE.BoxGeometry(1.22, 0.06, 0.4), mat(0x456f72, 0.5, 0.1)); basinInner.position.set(0, 0.225, -0.2); sink.add(basinInner);
+    const tapMaterial = mat(0xe6f1ee, 0.35, 0.55);
+    const tap = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.52, 12), tapMaterial); tap.position.set(0, 0.5, 0.05); sink.add(tap);
+    const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.38, 12), tapMaterial); spout.rotation.x = Math.PI / 2; spout.position.set(0, 0.72, -0.1); sink.add(spout);
     const backsplash = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.7, 0.08), mat(0xc7d5d4)); backsplash.position.set(0, 0.38, 0.34); sink.add(backsplash);
     const dispenser = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.42, 0.18), mat(0xe6f1ee)); dispenser.position.set(-0.9, 0.35, -0.24); sink.add(dispenser);
+    const hygienePanel = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.42, 0.035), mat(0x65c9b8)); hygienePanel.position.set(0.72, 0.78, 0.3); sink.add(hygienePanel);
     const receptionTable = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.25, 2.3), mat(0x829b9d)); receptionTable.position.set(3, 1.2, 18); this.scene.add(receptionTable);
     this.walls.push(new THREE.Box3(new THREE.Vector3(0.75, 0, 16.85), new THREE.Vector3(5.25, 1.325, 19.15)));
     const tableLeg = new THREE.Mesh(new THREE.BoxGeometry(0.25, 2.4, 0.25), mat(0x789293)); tableLeg.position.set(1.2, 0.1, 17.2); this.scene.add(tableLeg);
@@ -220,11 +240,59 @@ export class Laboratory {
     frame.position.set(position.x, position.y + size.y / 2, position.z); this.scene.add(frame);
   }
 
+  private addEntryWallDetails(material: (color: number, roughness?: number, metalness?: number) => THREE.MeshStandardMaterial): void {
+    const sanitary = material(0xb7c8c6, 0.72);
+    const clinical = material(0xc7d5d4, 0.78);
+    [-8.84, 8.84].forEach((x) => {
+      const panel = new THREE.Mesh(new THREE.BoxGeometry(0.035, 1.15, 2.6), sanitary);
+      panel.position.set(x, 0.78, 4.4); this.scene.add(panel);
+      const profile = new THREE.Mesh(new THREE.BoxGeometry(0.06, 2.5, 0.06), material(0x829b9d, 0.5, 0.2));
+      profile.position.set(x + (x < 0 ? 0.025 : -0.025), 1.45, 4.4); this.scene.add(profile);
+      const band = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.12, 5.8), clinical);
+      band.position.set(x, 2.55, 4.4); this.scene.add(band);
+    });
+    const technicalPanel = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.8, 1.1), material(0x829b9d, 0.55, 0.12));
+    technicalPanel.position.set(8.84, 1.65, 9.2); this.scene.add(technicalPanel);
+  }
+
+  private addEntryDoorDetails(material: (color: number, roughness?: number, metalness?: number) => THREE.MeshStandardMaterial): void {
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.22, 0.025), material(0xe6f1ee, 0.45, 0.2));
+    plate.position.set(DOOR_WIDTH / 2 + 0.42, 1.38, -0.105); this.entryDoorRoot.add(plate);
+    const plateInset = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.035, 0.012), material(0x65c9b8, 0.45));
+    plateInset.position.set(DOOR_WIDTH / 2 + 0.42, 1.38, -0.122); this.entryDoorRoot.add(plateInset);
+  }
+
+  private addEntryLighting(): void {
+    [-4.5, 4.5].forEach((x) => {
+      const light = new THREE.PointLight(0xfff8ed, 0.55, 9, 2);
+      light.position.set(x, 2.75, 7); this.scene.add(light);
+    });
+  }
+
+  private addPhysicalAreaSign(text: string, position: THREE.Vector3): THREE.Group {
+    const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
+    const context = canvas.getContext('2d');
+    if (context) { context.fillStyle = '#e6f1ee'; context.fillRect(0, 0, canvas.width, canvas.height); context.strokeStyle = '#65c9b8'; context.lineWidth = 8; context.strokeRect(4, 4, canvas.width - 8, canvas.height - 8); context.fillStyle = '#29494f'; context.font = 'bold 34px sans-serif'; context.textAlign = 'center'; context.fillText(text, canvas.width / 2, 78); }
+    const group = new THREE.Group(); group.position.copy(position); this.scene.add(group);
+    const board = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.76, 2.9), new THREE.MeshStandardMaterial({ color: 0xe6f1ee, roughness: 0.6, metalness: 0.05, toneMapped: false }));
+    group.add(board);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.72, 0.58), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), toneMapped: false }));
+    sign.rotation.y = Math.PI / 2; sign.position.x = 0.035; group.add(sign);
+    return group;
+  }
+
   private createFloorTexture(): THREE.CanvasTexture {
     const canvas = document.createElement('canvas'); canvas.width = 96; canvas.height = 96;
     const context = canvas.getContext('2d');
     if (context) { context.fillStyle = '#9aa9ab'; context.fillRect(0, 0, 96, 96); context.strokeStyle = 'rgba(255,255,255,.14)'; context.lineWidth = 1; context.strokeRect(1, 1, 94, 94); context.beginPath(); context.moveTo(0, 48); context.lineTo(96, 48); context.moveTo(48, 0); context.lineTo(48, 96); context.stroke(); }
     const texture = new THREE.CanvasTexture(canvas); texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(8, 28); texture.colorSpace = THREE.SRGBColorSpace; return texture;
+  }
+
+  private createSubtleFloorTexture(): THREE.CanvasTexture {
+    const canvas = document.createElement('canvas'); canvas.width = 96; canvas.height = 96;
+    const context = canvas.getContext('2d');
+    if (context) { context.fillStyle = '#9aa9ab'; context.fillRect(0, 0, 96, 96); context.fillStyle = 'rgba(255,255,255,.035)'; context.fillRect(7, 9, 38, 32); context.fillRect(58, 57, 31, 25); context.fillStyle = 'rgba(50,80,82,.025)'; context.fillRect(48, 18, 35, 28); }
+    const texture = new THREE.CanvasTexture(canvas); texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(8, 8); texture.colorSpace = THREE.SRGBColorSpace; return texture;
   }
 
   private configureShadows(): void {
