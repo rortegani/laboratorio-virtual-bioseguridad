@@ -25,7 +25,7 @@ export class AssetManager {
         source = gltf.scene;
         this.cache.set(path, source);
       }
-      const model = options.clone ? source.clone(true) : source;
+      const model = source.clone(true);
       this.applyTransform(model, options);
       return model;
     } catch (error) {

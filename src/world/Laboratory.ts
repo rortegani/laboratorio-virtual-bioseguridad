@@ -85,9 +85,11 @@ export class Laboratory {
     doorPanel.position.set(DOOR_WIDTH / 2, DOOR_HEIGHT / 2, 0); root.add(doorPanel);
     const frameMaterial = new THREE.MeshBasicMaterial({ color: 0x456f72, toneMapped: false });
     const frameSide = new THREE.Mesh(new THREE.BoxGeometry(0.18, DOOR_HEIGHT + 0.35, 0.3), frameMaterial);
-    frameSide.position.set(0.08, (DOOR_HEIGHT + 0.35) / 2, 0); root.add(frameSide);
+    frameSide.position.set(-DOOR_WIDTH / 2, (DOOR_HEIGHT + 0.35) / 2, z); this.scene.add(frameSide);
+    const frameSideRight = frameSide.clone();
+    frameSideRight.position.x = DOOR_WIDTH / 2; this.scene.add(frameSideRight);
     const frameTop = new THREE.Mesh(new THREE.BoxGeometry(DOOR_WIDTH + 0.18, 0.18, 0.3), frameMaterial);
-    frameTop.position.set(DOOR_WIDTH / 2, DOOR_HEIGHT + 0.08, 0); root.add(frameTop);
+    frameTop.position.set(0, DOOR_HEIGHT + 0.08, z); this.scene.add(frameTop);
     const handle = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.42, 0.12), new THREE.MeshBasicMaterial({ color: 0xe6f1ee, toneMapped: false }));
     handle.position.set(DOOR_WIDTH - 0.45, DOOR_HEIGHT / 2, -0.16); root.add(handle);
     collision.set(new THREE.Vector3(-DOOR_WIDTH / 2, 0, z - 0.125), new THREE.Vector3(DOOR_WIDTH / 2, DOOR_HEIGHT, z + 0.125));
@@ -190,7 +192,7 @@ export class Laboratory {
     const canvas = document.createElement('canvas'); canvas.width = 768; canvas.height = 96;
     const context = canvas.getContext('2d');
     if (context) { context.fillStyle = '#29494f'; context.fillRect(0, 0, canvas.width, canvas.height); context.strokeStyle = '#65c9b8'; context.lineWidth = 4; context.strokeRect(2, 2, canvas.width - 4, canvas.height - 4); context.fillStyle = '#e6f1ee'; context.font = 'bold 30px sans-serif'; context.textAlign = 'center'; context.fillText(text, canvas.width / 2, 59); }
-    const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthTest: false, toneMapped: false }));
+    const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), transparent: true, depthTest: true, toneMapped: false }));
     label.position.copy(position); label.scale.set(4.2, 0.52, 1); label.renderOrder = 10; this.scene.add(label);
   }
 }
