@@ -47,7 +47,7 @@ export class Laboratory {
   update(deltaTime: number): void {
     if (!this.doorOpen || this.doorProgress >= 1) return;
     this.doorProgress = Math.min(1, this.doorProgress + deltaTime * 2.4);
-    this.doorRoot.rotation.y = this.doorProgress * Math.PI / 2;
+    this.doorRoot.rotation.y = -this.doorProgress * Math.PI / 2;
   }
 
   openDoor(): void {
