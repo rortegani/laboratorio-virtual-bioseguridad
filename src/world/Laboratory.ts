@@ -163,7 +163,7 @@ export class Laboratory {
     addPanel(this.emergencyStationRoot, new THREE.Vector3(7, 1.1, 53), 0x789293);
     addPanel(this.wasteRoot, new THREE.Vector3(-3.5, 1.1, 53), 0x789293);
     addPanel(this.closeoutRoot, new THREE.Vector3(3.5, 1.1, 53), 0x789293);
-    this.safetyMeasureRoot.position.set(3, 1.5, 52.8); this.scene.add(this.safetyMeasureRoot);
+    this.safetyMeasureRoot.position.set(3, 1.5, 32.8); this.scene.add(this.safetyMeasureRoot);
     this.safetyMeasureRoot.add(new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.3, 0.18), mat(0x65c9b8)));
     this.interactive.push({ root: this.cabinetRoot }, { root: this.pipetteRoot }, { root: this.workAreaRoot }, { root: this.workSampleRoot }, { root: this.safetyMeasureRoot }, { root: this.sharedSurfaceRoot });
   }
