@@ -8,8 +8,13 @@ export type ModelTransform = {
 };
 
 export type ModelOptions = ModelTransform & {
-  clone?: boolean;
   onError?: (error: unknown) => void;
+};
+
+export type OptionalModelOptions = ModelOptions & {
+  path: string;
+  root: THREE.Object3D;
+  fallback?: THREE.Object3D[];
 };
 
 /** Cargador opcional de modelos: un fallo deja que el greybox siga visible. */
@@ -26,12 +31,28 @@ export class AssetManager {
         this.cache.set(path, source);
       }
       const model = source.clone(true);
+      this.prepareModel(model);
       this.applyTransform(model, options);
       return model;
     } catch (error) {
       options.onError?.(error);
       return null;
     }
+  }
+
+  async attachOptionalModel(options: OptionalModelOptions): Promise<THREE.Object3D | null> {
+    const { path, root, fallback, ...modelOptions } = options;
+    const model = await this.loadModel(path, modelOptions);
+    if (!model) return null;
+    root.add(model);
+    fallback?.forEach((object) => { object.visible = false; });
+    return model;
+  }
+
+  private prepareModel(model: THREE.Object3D): void {
+    model.traverse((child) => {
+      if (child instanceof THREE.Mesh) { child.castShadow = false; child.receiveShadow = false; }
+    });
   }
 
   private applyTransform(object: THREE.Object3D, options: ModelTransform): void {
